@@ -20,10 +20,21 @@ html {
   scroll-behavior: smooth;
 }
 
+/* El fondo pasa de negro (0%) a blanco (100%) según el scroll.
+   --scroll (0 a 1) lo actualiza script.js; sin JS queda en negro. */
+html {
+  --scroll: 0;
+  background: rgb(
+    calc(var(--scroll) * 255),
+    calc(var(--scroll) * 255),
+    calc(var(--scroll) * 255)
+  );
+}
+
 body {
   font-family: var(--fuente);
   color: var(--blanco);
-  background: var(--negro);
+  background: transparent;
 }
 
 img {
@@ -36,15 +47,14 @@ a {
   text-decoration: none;
 }
 
-/* ---------- Fondo degradado (negro > blanco > negro) ---------- */
-main {
-  background: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 20%,
-    #fff 60%,
-    #000 100%
-  );
+/* ---------- Color del texto ----------
+   Blanco sobre fondo oscuro, negro sobre fondo claro. script.js cambia
+   --texto al pasar el fondo por ~46% de gris, el punto donde ambos colores
+   tienen el mismo contraste (>4.5:1), así siempre se lee. */
+.header,
+.bloque {
+  color: var(--texto, var(--blanco));
+  transition: color 0.25s;
 }
 
 /* ---------- Header ---------- */

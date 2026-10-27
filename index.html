@@ -6,9 +6,16 @@
   <title>Media Resma Cooperativa de Diseño</title>
   <meta name="description" content="Diseño de Comunicación Visual">
   <link rel="icon" href="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- Capa de fondo propia (evita que el color se "propague" al canvas
+       del documento, lo que rompería el mix-blend-mode del texto) -->
+  <div class="page-bg" aria-hidden="true"></div>
 
   <!-- ENCABEZADO -->
   <header class="header">
@@ -18,9 +25,9 @@
     </a>
 
     <nav class="header__nav">
-      <a href="#proyectos">Proyectos</a>
-      <a href="#proyectos">Servicios</a>
-      <a href="#contacto">Contacto</a>
+      <a href="#proyectos"><span>Proyectos</span></a>
+      <a href="#servicios"><span>Servicios</span></a>
+      <a href="#contacto"><span>Contacto</span></a>
     </nav>
   </header>
 
@@ -38,10 +45,45 @@
       </a>
     </section>
 
-    <!-- TEXTO (del brochure, tipo biográfico) -->
+     <!-- TEXTO (del brochure, tipo biográfico) -->
     <section class="bloque bloque--texto" id="presentacion">
       <p>Texto del brochure.</p>
     </section>
+
+    <!-- SERVICIOS -->
+    <section class="bloque bloque--servicios" id="servicios">
+      <h2>Servicios</h2>
+      <p class="servicios__intro">Ofrecemos estrategias a medida de las necesidades de cada proyecto. Esta lista no es un catálogo cerrado. Si la solución que estás buscando no se encuentra aquí, contactanos para construirla juntxs.</p>
+
+      <dl class="servicios__lista">
+        <div class="servicios__item">
+          <dt>Identidad visual</dt>
+          <dd>Diseño de signo identitario &middot; Sistema de identidad visual &middot; Estrategia de marca gráfica &middot; Despliegue de marca actual</dd>
+        </div>
+        <div class="servicios__item">
+          <dt>Arte impreso</dt>
+          <dd>Piezas independientes &middot; Posters para eventos culturales, musicales y comerciales &middot; Concepto e imagen &middot; Arte de tapa</dd>
+        </div>
+        <div class="servicios__item">
+          <dt>Ilustración</dt>
+          <dd>Desarrollo de originales únicos o integrados a sistemas visuales &middot; Digital &middot; Vectorial &middot; Analógico</dd>
+        </div>
+        <div class="servicios__item">
+          <dt>Editorial</dt>
+          <dd>Maquetación &middot; Diseño y producción de libros, revistas y catálogos &middot; Diseño de información</dd>
+        </div>
+        <div class="servicios__item">
+          <dt>Tipografía</dt>
+          <dd>Lettering &middot; Tipografía para títulos &middot; Tipografía de marca &middot; Alfabeto</dd>
+        </div>
+        <div class="servicios__item">
+          <dt>Web</dt>
+          <dd>Prototipado &middot; Análisis de usuario &middot; Experiencia de usuario &middot; Flujo de usuario &middot; Diseño de Interfaz y desarrollo</dd>
+        </div>
+      </dl>
+    </section>
+
+   
 
     <!-- CONTACTO -->
     <section class="bloque bloque--contacto" id="contacto">
@@ -58,6 +100,5 @@
   </footer>
 
   <script src="script.js"></script>
-
 </body>
 </html>

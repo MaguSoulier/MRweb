@@ -4,7 +4,7 @@
   --blanco: #fff;
   --margen: 4rem;          /* margen lateral general */
   --ancho-contenido: 1200px;
-  --fuente: "Helvetica Neue", Arial, sans-serif; /* reemplazar por la tipografía definitiva */
+  --fuente: "Archivo", Arial, sans-serif; /* reemplazar por la tipografía definitiva */
 }
 
 /* ---------- Reset básico ---------- */
@@ -18,23 +18,39 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-color: var(--blanco) var(--negro);
+  scrollbar-width: thin;
 }
 
-/* El fondo pasa de negro (0%) a blanco (100%) según el scroll.
-   --scroll (0 a 1) lo actualiza script.js; sin JS queda en negro. */
-html {
-  --scroll: 0;
-  background: rgb(
-    calc(var(--scroll) * 255),
-    calc(var(--scroll) * 255),
-    calc(var(--scroll) * 255)
-  );
+/* ---------- Scrollbar (Chrome/Edge/Safari) ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--negro);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--blanco);
+  border-radius: 0;
 }
 
 body {
   font-family: var(--fuente);
   color: var(--blanco);
-  background: transparent;
+  font-weight: 200;
+}
+
+/* Capa de fondo dedicada (ver script.js): un div normal, no el
+   background de body/html, para que el mix-blend-mode del texto
+   pueda contrastar correctamente contra él. */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--negro);
+  transition: background-color 0.6s ease-out;
 }
 
 img {
@@ -47,19 +63,24 @@ a {
   text-decoration: none;
 }
 
-/* ---------- Color del texto ----------
-   Blanco sobre fondo oscuro, negro sobre fondo claro. script.js cambia
-   --texto al pasar el fondo por ~46% de gris, el punto donde ambos colores
-   tienen el mismo contraste (>4.5:1), así siempre se lee. */
-.header,
-.bloque {
-  color: var(--texto, var(--blanco));
-  transition: color 0.25s;
+/* ---------- Fondo negro > blanco controlado por scroll (ver script.js) ---------- */
+
+/* El texto usa mix-blend-mode para invertirse automáticamente
+   según el color de fondo detrás y mantenerse siempre legible. */
+.bloque--texto p,
+.bloque--contacto h2,
+.bloque--contacto a,
+.bloque--servicios h2,
+.bloque--servicios p,
+.bloque--servicios dt,
+.bloque--servicios dd {
+  color: #fff;
+  mix-blend-mode: difference;
 }
 
 /* ---------- Header ---------- */
 .header {
-  position: absolute;      /* sobre el hero; cambiar a fixed si querés que acompañe el scroll */
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -67,9 +88,14 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 2.5rem var(--margen);
+  padding: 2.5rem 0 2.5rem var(--margen);
   font-size: 0.75rem;
   text-transform: uppercase;
+}
+
+.header__logo {
+  color: var(--page-fg, #fff);
+  transition: color 0.2s linear;
 }
 
 .header__nav {
@@ -80,8 +106,66 @@ a {
 }
 
 .header__nav a {
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid currentColor;
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+}
+
+/* Highlight que se revela de derecha a izquierda al hacer hover.
+   Su color es el opuesto del fondo de la página en ese momento. */
+.header__nav a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--page-fg, #fff);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.45s ease-in-out;
+  pointer-events: none;
+}
+
+.header__nav a:hover::before,
+.header__nav a:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* Línea inferior y texto: su color es el opuesto del fondo de la
+   página; al pasar el highlight por encima pasan a ser del color
+   del fondo, que es el opuesto del highlight, manteniendo el
+   contraste. La transición va en sincro con la del highlight. */
+.header__nav a::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--page-fg, #fff);
+  transition: background-color 0.45s ease-in-out;
+}
+
+.header__nav a span {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  color: var(--page-fg, #fff);
+  transition: color 0.45s ease-in-out;
+}
+
+.header__nav a:hover span,
+.header__nav a:focus-visible span {
+  color: var(--page-bg, #000);
+}
+
+.header__nav a:hover::after,
+.header__nav a:focus-visible::after {
+  background-color: var(--page-bg, #000);
+}
+
+.header__nav a.is-active {
+  font-weight: 700;
 }
 
 /* ---------- Hero ---------- */
@@ -112,7 +196,52 @@ a {
 }
 
 .bloque--contacto {
-  min-height: 20vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.bloque--servicios {
+  min-height: 60vh;
+  padding-top: 20vh;
+}
+
+.bloque--servicios h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.servicios__intro {
+  max-width: 40rem;
+  margin-bottom: 3rem;
+  opacity: 0.8;
+}
+
+.servicios__lista {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem var(--margen);
+}
+
+.servicios__item dt {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.servicios__item dd {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .servicios__lista {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Footer ---------- */
@@ -127,7 +256,7 @@ a {
   }
 
   .header {
-    padding: 1.5rem var(--margen);
+    padding: 1.5rem 0 1.5rem var(--margen);
   }
 
   .header__nav {

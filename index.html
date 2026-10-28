@@ -20,7 +20,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    /* Invierte el logo (papel gris y tinta negra) y sube el contraste:
+    /* Invierte el logo (video comprimido a partir de logo.gif) (papel gris y tinta negra) y sube el contraste:
        fondo negro y letras blancas. */
     .logo {
       width: min(80vmin, 600px);
@@ -30,7 +30,9 @@
   </style>
 </head>
 <body>
-  <img class="logo" src="logo.gif" alt="Media Resma">
+  <video class="logo" autoplay loop muted playsinline aria-label="Media Resma">
+    <source src="logo.mp4" type="video/mp4">
+  </video>
   <p>Web en proceso</p>
 </body>
 </html>

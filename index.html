@@ -9,8 +9,10 @@
     html, body { height: 100%; margin: 0; }
     body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 1rem;
       background: #000;
       color: #fff;
       font-family: "Helvetica Neue", Arial, sans-serif;
@@ -18,9 +20,17 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    /* Invierte el logo (papel gris y tinta negra) y sube el contraste:
+       fondo negro y letras blancas. */
+    .logo {
+      width: min(80vmin, 600px);
+      height: auto;
+      filter: invert(1) brightness(0.7) contrast(6);
+    }
   </style>
 </head>
 <body>
+  <img class="logo" src="logo.gif" alt="Media Resma">
   <p>Web en proceso</p>
 </body>
 </html>

@@ -231,65 +231,46 @@ a {
   }
 }
 
-/* ---------- Espectro (sección de texto) ---------- */
+/* ---------- Espectro (sección de texto, estática) ---------- */
 .bloque--texto {
   padding: 28vh 0;
   color: var(--page-fg, #fff);
   font-family: var(--fuente);
 }
 
+/* Ocupa todo el ancho entre márgenes */
 .espectro {
-  max-width: 520px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4.5rem;
+  gap: 2.5rem;
 }
 
 .espectro__fila {
-  --p: 0; /* progreso general (lo maneja el JS) */
-  --tacha: clamp(0, calc(var(--p) * 2.2), 1);          /* 1ª mitad: tacha */
-  --entra: clamp(0, calc((var(--p) - 0.4) * 1.9), 1);  /* 2ª mitad: aparece */
   display: flex;
   align-items: baseline;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 
-/* Palabra que NO creemos: se tacha y se apaga */
 .espectro__izq {
-  position: relative;
   font-weight: 300;
-  opacity: calc(1 - 0.7 * var(--tacha));
 }
 
-.espectro__izq::after {
-  content: "";
-  position: absolute;
-  left: -2%;
-  right: -2%;
-  top: 56%;
-  height: 2px;
-  background: currentColor;
-  transform-origin: left center;
-  transform: scaleX(var(--tacha));
-}
-
-/* Línea de unión: se dibuja después de la tachadura */
+/* La línea se estira y empuja las palabras a los extremos */
 .espectro__linea {
   flex: 1;
   height: 1px;
-  margin: 0 1rem;
+  margin: 0 1.5rem;
   background: currentColor;
-  transform-origin: left center;
-  transform: scaleX(var(--entra));
 }
 
-/* Palabra que SÍ: entra desde la derecha, de borrosa a nítida */
 .espectro__der {
   font-weight: 700;
-  opacity: var(--entra);
-  transform: translateX(calc((1 - var(--entra)) * 40px));
-  filter: blur(calc((1 - var(--entra)) * 8px));
+}
+
+@media (max-width: 768px) {
+  .espectro__fila { font-size: 0.95rem; }
+  .espectro__linea { margin: 0 0.75rem; }
 }
 
 /* ---------- Footer ---------- */

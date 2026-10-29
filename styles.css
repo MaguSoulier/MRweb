@@ -94,6 +94,16 @@ a {
 .header__logo {
   color: var(--page-fg, #fff);
   transition: color 0.2s linear;
+   display: block;
+  padding-left: 2.6em;
+  text-indent: -2.6em;
+}
+
+.header__pre {
+  display: inline-block;
+  width: 2.6em;
+  text-indent: 0;
+  text-transform: none;
 }
 
 .header__nav {
@@ -191,6 +201,15 @@ a {
 
 .bloque--gif {
   min-height: 60vh;
+  margin-top: 20vh;
+  scroll-margin-top: 14vh;   /* al clickear "Proyectos", deja aire debajo del header */
+}
+
+.bloque--gif img {
+  width: auto;
+  max-width: 100%;
+  max-height: 76vh;          /* el GIF entra completo en pantalla */
+  margin: 0 auto;
 }
 
 .bloque--servicios {
@@ -205,7 +224,7 @@ a {
 }
 
 .servicios__intro {
-  max-width: 40rem;
+  max-width: calc(50% - var(--margen) / 2);
   margin-bottom: 3rem;
   opacity: 0.8;
 }
@@ -218,9 +237,7 @@ a {
 
 .servicios__item dt {
   font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  font-size: 1rem;
   margin-bottom: 0.5rem;
 }
 
@@ -232,6 +249,9 @@ a {
 @media (max-width: 768px) {
   .servicios__lista {
     grid-template-columns: 1fr;
+  }
+  .servicios__intro {
+  max-width: 100%;
   }
 }
 

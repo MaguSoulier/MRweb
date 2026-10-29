@@ -4,11 +4,14 @@
   var ticking = false;
   var bgLayer = document.querySelector(".page-bg");
   var whiteSection = document.getElementById("servicios");
-  var blackSection = document.getElementById("contacto");
+  // La sección "contacto" ya no existe: ahora el negro final llega con el footer
+  var blackSection =
+    document.getElementById("contacto-footer") ||
+    document.getElementById("contacto");
 
   // Negro -> rampa a blanco hasta llegar a "servicios" -> blanco fijo
   // mientras dura esa sección -> rampa de vuelta a negro hasta llegar
-  // a "contacto" -> negro fijo de ahí en adelante.
+  // al footer -> negro fijo de ahí en adelante.
   function shadeForScroll(y, maxScroll) {
     if (!whiteSection || maxScroll <= 0) {
       return 0;
@@ -112,4 +115,69 @@
   sections.forEach(function (section) {
     observer.observe(section);
   });
+})();
+
+// Ajusta el mail gigante del footer al ancho exacto disponible
+(function () {
+  function ajustarMailGigante() {
+    var caja = document.querySelector(".footer__mail-gigante");
+    if (!caja) return;
+    var texto = caja.querySelector("span");
+    if (!texto) return;
+    caja.style.fontSize = "100px";
+    var ancho = texto.getBoundingClientRect().width;
+    if (!ancho) return;
+    caja.style.fontSize = (100 * caja.clientWidth / ancho) + "px";
+  }
+
+  window.addEventListener("resize", ajustarMailGigante);
+  window.addEventListener("load", ajustarMailGigante);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(ajustarMailGigante);
+  }
+  ajustarMailGigante();
+})();
+
+// Animación del espectro (sección de texto): avanza con el scroll
+(function () {
+  var filas = document.querySelectorAll(".espectro__fila");
+  if (!filas.length) return;
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    Array.prototype.forEach.call(filas, function (f) {
+      f.style.setProperty("--p", 1);
+    });
+    return;
+  }
+
+  function clamp(n) {
+    return Math.min(1, Math.max(0, n));
+  }
+
+  var pendiente = false;
+
+  function actualizar() {
+    var vh = window.innerHeight;
+    var inicio = vh * 0.92; // empieza a animarse al entrar por abajo
+    var fin = vh * 0.5;     // queda completa al llegar a la mitad
+    Array.prototype.forEach.call(filas, function (fila) {
+      var top = fila.getBoundingClientRect().top;
+      fila.style.setProperty(
+        "--p",
+        clamp((inicio - top) / (inicio - fin)).toFixed(3)
+      );
+    });
+    pendiente = false;
+  }
+
+  function alScrollear() {
+    if (!pendiente) {
+      pendiente = true;
+      window.requestAnimationFrame(actualizar);
+    }
+  }
+
+  window.addEventListener("scroll", alScrollear, { passive: true });
+  window.addEventListener("resize", alScrollear);
+  actualizar();
 })();

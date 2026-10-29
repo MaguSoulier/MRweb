@@ -174,8 +174,12 @@ a {
   align-items: center;
 }
 
-.hero__imagen {
-  width: min(40vw, 480px);
+/* Logo en video (provisorio). Invierte el video (papel gris y tinta
+   negra) y sube el contraste: fondo negro y letras blancas. */
+.hero__logo {
+  width: min(80vmin, 600px);
+  height: auto;
+  filter: invert(1) brightness(0.7) contrast(6);
 }
 
 /* ---------- Bloques de contenido ---------- */
@@ -387,7 +391,7 @@ a {
     min-width: 8rem;
   }
 
-  .hero__imagen {
+  .hero__logo {
     width: 70vw;
   }
 

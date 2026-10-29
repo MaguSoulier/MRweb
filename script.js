@@ -1,58 +1,33 @@
-// Transiciona el fondo del body de negro (100%) a blanco (100%)
-// a medida que se hace scroll por toda la página.
+// Transiciona el fondo de negro a blanco y de vuelta, con cambios rápidos
 (function () {
   var ticking = false;
   var bgLayer = document.querySelector(".page-bg");
   var whiteSection = document.getElementById("servicios");
-  // La sección "contacto" ya no existe: ahora el negro final llega con el footer
-  var blackSection =
-    document.getElementById("contacto-footer") ||
-    document.getElementById("contacto");
 
-  // Negro -> rampa a blanco hasta llegar a "servicios" -> blanco fijo
-  // mientras dura esa sección -> rampa de vuelta a negro hasta llegar
-  // al footer -> negro fijo de ahí en adelante.
-  function shadeForScroll(y, maxScroll) {
-    if (!whiteSection || maxScroll <= 0) {
-      return 0;
+  // Transición corta: ocurre en media pantalla de scroll
+  function shadeForScroll(y) {
+    if (!whiteSection) return 0;
+
+    var vh = window.innerHeight;
+    var top = whiteSection.getBoundingClientRect().top + y;
+    var bottom = top + whiteSection.offsetHeight;
+
+    var upStart = top - vh * 0.9;      // empieza a aclararse
+    var upEnd = top - vh * 0.4;        // ya es blanco total
+    var downStart = bottom - vh * 0.6; // empieza a oscurecerse
+    var downEnd = bottom - vh * 0.1;   // ya es negro total
+
+    function t(a, b) {
+      return Math.min(Math.max((y - a) / (b - a), 0), 1);
     }
 
-    var whiteRect = whiteSection.getBoundingClientRect();
-    var whiteTop = whiteRect.top + y;
-    var whiteBottom = whiteTop + whiteSection.offsetHeight;
-
-    if (y <= whiteTop) {
-      var tUp = whiteTop > 0 ? Math.min(Math.max(y / whiteTop, 0), 1) : 1;
-      return Math.round(tUp * 255);
-    }
-
-    if (y <= whiteBottom) {
-      return 255;
-    }
-
-    var blackStart = maxScroll;
-    if (blackSection) {
-      var blackRect = blackSection.getBoundingClientRect();
-      var candidate = blackRect.top + y;
-      if (candidate > whiteBottom) {
-        blackStart = candidate;
-      }
-    }
-
-    if (y >= blackStart) {
-      return 0;
-    }
-
-    var remaining = blackStart - whiteBottom;
-    var tDown = remaining > 0
-      ? Math.min(Math.max((y - whiteBottom) / remaining, 0), 1)
-      : 1;
-    return Math.round((1 - tDown) * 255);
+    if (y <= upEnd) return Math.round(t(upStart, upEnd) * 255);
+    if (y <= downStart) return 255;
+    return Math.round((1 - t(downStart, downEnd)) * 255);
   }
 
   function setBackground() {
-    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    var shade = shadeForScroll(window.scrollY, maxScroll);
+    var shade = shadeForScroll(window.scrollY);
     var opposite = 255 - shade;
     var bg = "rgb(" + shade + ", " + shade + ", " + shade + ")";
     var fg = "rgb(" + opposite + ", " + opposite + ", " + opposite + ")";

@@ -271,8 +271,8 @@ a {
 /* ===== FOOTER ===== */
 .footer {
   position: relative;
-  background: #000;
-  color: #fff;
+  background: #fff;
+  color: #000;
   font-family: "Archivo", Arial, sans-serif;
   overflow: hidden;
   padding-top: 7rem;
@@ -309,11 +309,25 @@ a {
 .footer__col--nav {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.35rem;
   font-size: 0.9rem;
   font-weight: 300;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+/* Hover de subrayado en Proyectos y Servicios */
+.footer__col--nav a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.footer__col--nav a:hover {
+  text-decoration-color: #000;
 }
 
 .footer__col--contacto {
@@ -345,7 +359,7 @@ a {
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-  height: 0.62em;
+  height: 0.7em;
   overflow: hidden;
   margin-top: 6rem;
   padding-left: 2vw;

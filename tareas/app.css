@@ -2,6 +2,7 @@
 body { margin: 0; font-family: var(--font-sans); font-size: var(--font-size-body); color: var(--color-ink); background: var(--color-surface); }
 [hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
+::selection { background: var(--color-selection); color: var(--color-black); }
 :focus-visible { outline: 1px solid var(--color-black); outline-offset: 2px; }
 .mono { font-family: var(--font-mono); }
 .light { font-weight: var(--font-weight-light); }
@@ -39,7 +40,7 @@ textarea { resize: vertical; min-height: 96px; line-height: 1.45; }
 
 
 /* ---------- Acceso ---------- */
-#auth { animation: rise var(--dur-med) var(--ease-out) both; min-height: 100vh; padding: 51px 16px 129px; background: var(--color-surface-sidebar); display: flex; flex-direction: column; align-items: center; gap: 29px; }
+#auth { animation: rise var(--dur-med) var(--ease-out) both; min-height: 100vh; min-height: 100dvh; padding: 51px 16px 129px; background: var(--color-surface-sidebar); display: flex; flex-direction: column; align-items: center; gap: 29px; }
 /* Logo: el papel gris se funde con el fondo (multiplicar) y el contraste alto deja solo la tinta, como en la web principal */
 .auth-logo { width: 145px; height: 145px; object-fit: cover; mix-blend-mode: multiply; filter: grayscale(1) brightness(1.1) contrast(4); }
 .auth-card { background: var(--color-surface); padding: 28px; border-radius: var(--radius); width: min(360px, 100%); }
@@ -213,7 +214,7 @@ button.danger:hover { border-color: var(--color-hover-border); }
 .danger-zone { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-border); }
 
 /* ---------- Menús y selector de fecha ---------- */
-.popover { animation: pop var(--dur-fast) var(--ease-out) both; position: absolute; z-index: 30; background: var(--color-surface); border: 1px solid var(--color-black); border-radius: var(--radius); }
+.popover { animation: pop var(--dur-fast) var(--ease-out) both; position: absolute; z-index: 80; background: var(--color-surface); border: 1px solid var(--color-black); border-radius: var(--radius); }
 .menu { padding: 4px; min-width: 170px; display: flex; flex-direction: column; }
 .menu button { border: 1px solid transparent; text-align: left; white-space: pre; }
 .menu button:hover { border-color: var(--color-hover-border); }
@@ -236,19 +237,69 @@ button.danger:hover { border-color: var(--color-hover-border); }
 .projnew-row .cta { flex: none; white-space: nowrap; }
 
 /* ---------- Pantallas estrechas ---------- */
+.topbar, .scrim, .side-close, .detail-back { display: none; }
+@media (hover: none) { .h2actions button { visibility: visible; } } /* sin cursor no hay hover: los botones se ven siempre */
+
 @media (max-width: 1100px) {
-  #app, #app.detail-open { grid-template-columns: minmax(0, 1fr); height: auto; transition: none; }
+  html, body { overflow-x: hidden; }
+  body:has(#app.nav-open), body:has(#app.detail-open) { overflow: hidden; } /* con el menú o el panel abierto no se desplaza la página de fondo */
+  #app, #app.detail-open { display: block; height: auto; transition: none; }
   #app > * { overflow-y: visible; }
-  main { padding: 28px 20px; }
-  .detail { display: none; visibility: visible; }
-  .detail-open .detail { display: block; }
-  .detail-inner { width: auto; padding: 28px 20px; }
-  .row { grid-template-columns: minmax(0, 1fr) 100px 60px; }
+  input, select, textarea, .detail .ttl { font-size: 16px; } /* evita el zoom automático de iOS al enfocar un campo */
+
+  /* Barra superior con el botón de menú */
+  .topbar { display: flex; align-items: center; gap: 4px; position: sticky; top: 0; z-index: 20; padding: 4px 12px 4px 4px;
+    padding-top: calc(4px + env(safe-area-inset-top)); background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+  .topbar span { font-weight: var(--font-weight-semibold); }
+  .menu-btn { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border-color: transparent; }
+
+  /* La barra lateral pasa a ser un cajón que entra por la izquierda */
+  #app > .side { position: fixed; inset: 0 auto 0 0; z-index: 50; width: min(320px, 86vw); overflow-y: auto; overscroll-behavior: contain;
+    padding: 12px 24px calc(28px + env(safe-area-inset-bottom)); gap: 24px;
+    transform: translateX(-100%); visibility: hidden; transition: transform var(--dur-med) var(--ease-out), visibility 0s linear var(--dur-med); }
+  #app.nav-open > .side { transform: none; visibility: visible; transition-delay: 0s; }
+  .side-close { display: flex; align-self: flex-end; width: 44px; height: 44px; align-items: center; justify-content: center; margin-right: -12px; color: var(--color-ink); }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .4); opacity: 0; pointer-events: none; transition: opacity var(--dur-med); }
+  .nav-open .scrim { opacity: 1; pointer-events: auto; }
+
+  main { min-width: 0; padding: 20px 16px calc(32px + env(safe-area-inset-bottom)); gap: 18px; }
+  .title { font-size: clamp(30px, 9vw, 44px); }
+
+  /* Panel de detalles: hoja a pantalla completa */
+  #app > .detail { display: none; position: fixed; inset: 0; z-index: 60; overflow-y: auto; overscroll-behavior: contain; visibility: visible; }
+  #app.detail-open > .detail { display: block; }
+  button.detail-back { display: inline-flex; align-items: center; min-height: 44px; margin: calc(4px + env(safe-area-inset-top)) 8px 0; padding: 0 10px; font-size: var(--font-size-body); color: var(--color-ink); }
+  .detail-inner { width: auto; padding: 4px 20px calc(32px + env(safe-area-inset-bottom)); }
+  .detail .ttl { font-size: 26px; }
+
+  /* Lista: cada tarea en dos líneas (título; estado y fecha) en vez de columnas */
+  .row.head { display: none; }
+  .row, .row:not(.head) { grid-template-columns: minmax(0, 1fr) auto; row-gap: 8px; padding: 12px 8px; border-bottom-color: var(--color-gray-100); }
+  .row .cell-title { grid-column: 1 / -1; }
   .row .c-proj, .row .c-prio { display: none; }
+  .check { width: 22px; height: 22px; margin-top: 0; font-size: 13px; line-height: 20px; }
   .board { grid-template-columns: minmax(0, 1fr); }
-  .mday { min-height: 72px; padding: 3px; }
-  .mchip { padding: 0 3px; font-size: var(--font-size-label); }
+
+  /* Calendario mensual: las tareas son puntos y tocar un día abre su lista */
+  .mwd { padding: 6px 0; text-align: center; }
+  .mday { min-height: 58px; padding: 4px; flex-direction: row; flex-wrap: wrap; align-content: flex-start; gap: 3px; cursor: pointer; }
+  .mday-top { width: 100%; }
+  .mday .mchip { width: 8px; height: 8px; padding: 0; border: none; border-radius: var(--radius-circle); background: var(--c); font-size: 0; pointer-events: none; }
+  .mday .mchip span { display: none; }
+  .mday .more { padding: 0; font-size: 10px; line-height: 8px; }
   .madd { display: none; }
+
+  /* Objetivos táctiles más grandes */
+  .navitem { padding: 10px 8px; }
+  .side h2 .ghost { padding: 6px; }
+  .pill { padding: 8px 14px; }
+  .chip { padding: 8px 14px; }
+  .seg-item { padding: 10px 4px; }
+  button.ghost { padding: 6px 8px; }
+  .cta { padding: 12px 20px; }
+  .actions button { padding: 12px; }
+  .projpop { width: min(380px, calc(100vw - 24px)); }
+  .datepop { width: min(300px, calc(100vw - 24px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

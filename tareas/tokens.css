@@ -21,6 +21,7 @@
   --color-red-500: #e22a11;
   --color-orange-500: #f68300;
   --color-orange-700: #d16f00; /* texto de la etiqueta "En proceso" */
+  --color-violet-300: #cc91ff; /* selección de texto */
   --color-red-700: #c0240e; /* texto del botón "Eliminar tarea" */
 
   /* ---------- Semánticos ---------- */
@@ -29,6 +30,7 @@
   --color-surface-muted: var(--color-gray-100);
   --color-chip: var(--color-gray-75);
   --color-border: var(--color-gray-400);
+  --color-selection: var(--color-violet-300);
   --color-hover-border: var(--color-black); /* al pasar el cursor: borde de 1px negro */
 
   --color-text: var(--color-basic-800);

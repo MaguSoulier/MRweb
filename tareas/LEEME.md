@@ -40,5 +40,5 @@ La clave `anon` es pública por diseño; la protección real está en las polít
 - En la fila de un proyecto, un punto por cada persona asignada; en la de una persona, un punto por tarea.
   Colores: gris sin iniciar, naranja en proceso, verde completada, rojo atrasada.
 - Vista en lista o tablero (arrastrar entre columnas cambia el estado) y orden por fecha, prioridad, estado, nombre o proyecto.
-- Panel de detalles a la derecha: varias personas por tarea, prioridad P1–P4, fecha límite y descripción.
+- Panel de detalles a la derecha: varias personas por tarea, prioridad (!!!, !! o !), fecha límite y descripción.
 - Cambios en tiempo real entre todos los usuarios.

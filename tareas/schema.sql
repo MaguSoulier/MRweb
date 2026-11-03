@@ -53,7 +53,7 @@ create table if not exists tasks (
   assignees uuid[] not null default '{}',
   due_date date,
   status text not null default 'todo' check (status in ('todo', 'doing', 'done')),
-  priority smallint not null default 2 check (priority between 1 and 4),
+  priority smallint not null default 2 check (priority between 1 and 3),
   created_by uuid default auth.uid(),
   created_at timestamptz not null default now()
 );

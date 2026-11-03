@@ -56,7 +56,17 @@
 </div>
 
 <div id="app" hidden>
-  <aside class="side">
+  <header class="topbar">
+    <button type="button" class="menu-btn" id="menu-btn" aria-label="Abrir menú" aria-controls="side" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <span>Tareas del equipo</span>
+  </header>
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="side">
+    <button type="button" class="ghost side-close" id="side-close" aria-label="Cerrar menú">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
     <section id="cal"></section>
     <section>
       <h2><button type="button" class="h2btn" id="proj-open" aria-haspopup="true" title="Editar proyectos y prioridades">Proyectos</button><span class="h2actions"><button class="ghost" id="proj-edit" title="Editar proyectos y prioridades" aria-label="Editar proyectos y prioridades"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button><button class="ghost" id="proj-new" title="Nuevo proyecto" aria-label="Nuevo proyecto"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></span></h2>
@@ -78,10 +88,6 @@
       <button class="pill" id="btn-view"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="pill" id="btn-sort"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="pill day-chip" id="day-chip" hidden></button>
-      <span id="proj-actions" hidden>
-        <button class="ghost" id="proj-rename">Renombrar proyecto</button>
-        <button class="ghost" id="proj-del">Eliminar proyecto</button>
-      </span>
     </div>
     <div id="content"></div>
   </main>
@@ -101,6 +107,9 @@ const sb = SUPABASE_URL.includes("TU-PROYECTO")
 const $ = (s) => document.querySelector(s);
 const STATE_LABEL = { todo: "Sin iniciar", doing: "En proceso", done: "Completada", late: "Atrasada" };
 const STATE_RANK = { late: 0, doing: 1, todo: 2, done: 3 };
+// Prioridad: 1 es la más alta y se muestra con más signos
+const PRIO = { 1: "!!!", 2: "!!", 3: "!" };
+const prio = (n) => PRIO[n] || PRIO[3];
 const SORTS = { due: "Fecha límite", priority: "Prioridad", status: "Estado", title: "Nombre", project: "Proyecto (relevancia)" };
 const SORT_SHORT = { due: "fecha", priority: "prioridad", status: "estado", title: "nombre", project: "proyecto" };
 const VIEWS = { list: "Lista", board: "Tablero", calendar: "Calendario" };
@@ -281,6 +290,17 @@ async function saveDraft() {
   load();
 }
 
+/* ---------- Menú lateral en pantallas estrechas ---------- */
+const NARROW = "(max-width: 1100px)";
+function setNav(open) {
+  $("#app").classList.toggle("nav-open", open);
+  $("#menu-btn").setAttribute("aria-expanded", String(open));
+}
+$("#menu-btn").onclick = () => setNav(true);
+$("#scrim").onclick = $("#side-close").onclick = () => setNav(false);
+// Al elegir una persona, un proyecto o un día el menú se cierra (fase de captura: antes de que se repinte)
+$("#side").addEventListener("click", (e) => { if (e.target.closest(".navitem, .day")) setNav(false); }, true);
+
 /* ---------- Selección, orden y filtros ---------- */
 function setFocus(type, id) {
   const f = state.focus;
@@ -454,13 +474,7 @@ function openProjectList(anchor, focusNew = false) {
 $("#proj-open").onclick = (e) => openProjectList(e.currentTarget);
 $("#proj-edit").onclick = () => openProjectList($("#proj-open")); // el lápiz abre la misma lista
 $("#proj-new").onclick = () => openProjectList($("#proj-open"), true); // el «+» abre la lista lista para escribir
-$("#proj-rename").onclick = () => openProjectList($("#proj-open")); // el nombre se edita en la lista
-$("#proj-del").onclick = async () => {
-  const p = projectById(state.focus.id);
-  if (!confirm(`¿Eliminar el proyecto "${p.name}" con todas sus tareas?`)) return;
-  await run(sb.from("projects").delete().eq("id", p.id));
-  await load();
-};
+
 /* ---------- Pintado ---------- */
 function render() {
   renderCalendar();
@@ -482,7 +496,6 @@ function renderToolbar() {
   const chip = $("#day-chip");
   chip.hidden = !state.day || state.view === "calendar";
   if (state.day) chip.textContent = `Fecha: ${fmtDate(state.day)} ✕`;
-  $("#proj-actions").hidden = state.focus.type !== "project";
   $("#btn-sort").hidden = state.view === "calendar"; // en el calendario el orden lo da la fecha
   $("#btn-view span").textContent = VIEWS[state.view];
   $("#btn-sort span").textContent = "Ordenado por " + SORT_SHORT[state.sort.key];
@@ -617,7 +630,7 @@ function taskRow(t) {
     el("span", { class: "light c-proj", textContent: projectName(t.project_id) }),
     statePill(s),
     el("span", { class: "light mono" + (s === "late" ? " late-date" : ""), textContent: fmtDate(t.due_date) }),
-    el("span", { class: "light mono c-prio", textContent: "P" + t.priority }));
+    el("span", { class: "light mono c-prio", textContent: prio(t.priority) }));
 }
 // Pendientes arriba, botón de añadir en medio y completadas debajo
 function renderList(tasks) {
@@ -689,6 +702,10 @@ function renderMonth(tasks) {
       cell.append(el("button", { type: "button", class: "ghost more", textContent: `+${list.length - shown.length} más`, onclick: () => { expandedDays.add(s); render(); } }));
     }
     cell.style.setProperty("--i", Math.floor(i / 7));
+    cell.addEventListener("click", (e) => { // en pantallas táctiles las tareas son puntos: tocar el día abre su lista
+      if (!matchMedia(NARROW).matches || e.target.closest("button")) return;
+      state.day = s; state.view = "list"; render();
+    });
     dropTarget(cell, (id) => updateTask(id, { due_date: s }));
     grid.append(cell);
   }
@@ -726,7 +743,7 @@ function boardCard(t) {
   const card = el("div", { class: "bcard" + (t.id === state.taskId ? " sel" : ""), draggable: true, onclick: () => selectTask(t.id) },
     el("div", { class: "tt", textContent: t.title }),
     el("div", { class: "meta" }, statePill(s), el("span", { textContent: projectName(t.project_id) }),
-      el("span", { class: "mono", textContent: fmtDate(t.due_date) }), el("span", { class: "mono", textContent: "P" + t.priority })));
+      el("span", { class: "mono", textContent: fmtDate(t.due_date) }), el("span", { class: "mono", textContent: prio(t.priority) })));
   card.addEventListener("dragstart", (e) => {
     dragging = true; card.classList.add("dragging");
     e.dataTransfer.setData("text/plain", t.id); e.dataTransfer.effectAllowed = "move";
@@ -772,13 +789,14 @@ function renderDetail() {
   const desc = el("textarea", { rows: 1, value: d.description, placeholder: "Añade una descripción…", "aria-label": "Descripción" });
   const fit = () => { desc.style.height = "auto"; desc.style.height = desc.scrollHeight + "px"; }; // crece con el texto
   desc.addEventListener("input", () => { d.description = desc.value; fit(); });
-  box.replaceChildren(el("div", { class: "detail-inner" + (changed ? " swap" : "") },
+  box.replaceChildren(el("button", { type: "button", class: "ghost detail-back", textContent: "← Volver", onclick: closePanel }),
+    el("div", { class: "detail-inner" + (changed ? " swap" : "") },
     el("input", { class: "ttl", value: d.title, "aria-label": "Título", oninput: (e) => { d.title = e.target.value; } }),
     field("Descripción", desc),
     field("Proyecto", select(state.projects.map((p) => [p.id, p.name]), d.project_id, (v) => set({ project_id: v }))),
     field("Asignada a", chips),
     field("Estado", segmented([["todo", STATE_LABEL.todo], ["doing", STATE_LABEL.doing], ["done", STATE_LABEL.done]], d.status, (v) => set({ status: v }))),
-    field("Prioridad", segmented([1, 2, 3, 4].map((n) => [n, "P" + n]), d.priority, (v) => set({ priority: v }))),
+    field("Prioridad", segmented([1, 2, 3].map((n) => [n, prio(n)]), d.priority, (v) => set({ priority: v }))),
     field("Fecha límite", dateField(d.due_date, (v) => set({ due_date: v }))),
     el("div", { class: "actions" },
       el("button", { type: "button", class: "primary", textContent: "Guardar cambios", onclick: saveDraft }),
@@ -794,13 +812,14 @@ function renderDetail() {
       },
     }))])));
   fit();
-  if (changed && matchMedia("(max-width: 1100px)").matches) box.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (changed) box.scrollTop = 0;
 }
 
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if ($(".popover")) closeMenu();
   else if (state.taskId) closePanel();
+  else setNav(false);
 });
 
 // Un clic en cualquier otro sitio cierra el panel. Se decide en la fase de captura, antes de que

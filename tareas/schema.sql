@@ -12,7 +12,8 @@ create or replace function handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   insert into profiles (id, email, name)
-  values (new.id, new.email, initcap(split_part(new.email, '@', 1)))
+  values (new.id, new.email,
+    coalesce(nullif(trim(new.raw_user_meta_data ->> 'nickname'), ''), initcap(split_part(new.email, '@', 1))))
   on conflict do nothing;
   return new;
 end $$;
@@ -67,7 +68,6 @@ drop policy if exists propio on profiles;
 drop policy if exists equipo on projects;
 drop policy if exists equipo on tasks;
 create policy equipo on profiles for select to authenticated using (true);
-create policy propio on profiles for update to authenticated using (id = auth.uid()) with check (id = auth.uid());
 create policy equipo on projects for all to authenticated using (true) with check (true);
 create policy equipo on tasks for all to authenticated using (true) with check (true);
 

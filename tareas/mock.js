@@ -1,44 +1,14 @@
 // Modo demo: imita la parte de Supabase que usa la app, guardando todo en localStorage.
 // Se activa solo mientras config.js tenga los valores de ejemplo. No hace falta tocarlo.
 function createMockClient() {
-  const KEY = "mr_tareas_demo_v2";
+  const KEY = "mr_tareas_demo_v3";
   const SESSION_KEY = "mr_tareas_demo_session";
   const uid = () => crypto.randomUUID();
   const listeners = [];
 
+  // Sin datos de ejemplo: un único usuario (el de la sesión) y nada más
   function seed() {
-    const pad = (n) => String(n).padStart(2, "0");
-    const day = (offset) => {
-      const d = new Date();
-      d.setDate(d.getDate() + offset);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    };
-    const profiles = ["Magu", "Mai", "Iván", "Iari", "Memi"].map((name, i) => ({
-      id: "u" + (i + 1), name, email: name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "") + "@demo.com",
-    }));
-    const projects = ["Minotauro", "Hilacha", "El Galpón", "Interno"].map((name, i) => ({
-      id: uid(), name, position: (i + 1) * 1000, created_at: new Date().toISOString(), // el primero es el más relevante
-    }));
-    const [mino, galpon, hilacha, interno] = projects.map((p) => p.id);
-    const task = (project_id, title, assignees, due, status, priority) => ({
-      id: uid(), project_id, title, description: "", assignees, due_date: day(due), status, priority,
-      created_at: new Date().toISOString(),
-    });
-    return {
-      profiles, projects,
-      tasks: [
-        task(mino, "Tarea de ejemplo 1", ["u1", "u2", "u3", "u4"], 7, "doing", 1),
-        task(hilacha, "Tarea de ejemplo 2", ["u1", "u3"], 7, "doing", 1),
-        task(interno, "Tarea de ejemplo 3", ["u1", "u4", "u5"], 7, "doing", 1),
-        task(hilacha, "Tarea de ejemplo 4", ["u1"], 7, "doing", 1),
-        task(mino, "Reunión con el cliente", ["u2"], 2, "todo", 2),
-        task(galpon, "Maquetar planos", ["u1", "u3"], 4, "doing", 2),
-        task(galpon, "Presupuesto", ["u2", "u5"], -3, "done", 3),
-        task(galpon, "Revisar permisos", ["u4"], -2, "todo", 1),
-        task(hilacha, "Entrega de muestras", ["u3", "u2"], -1, "todo", 1),
-        task(interno, "Ordenar archivo", ["u4", "u5", "u2"], -5, "done", 4),
-      ],
-    };
+    return { profiles: [{ id: "u1", name: "Yo", email: "yo@demo.com" }], projects: [], tasks: [] };
   }
 
   let db;
@@ -104,8 +74,10 @@ function createMockClient() {
     else localStorage.removeItem(SESSION_KEY);
     listeners.forEach((cb) => cb(session ? "SIGNED_IN" : "SIGNED_OUT", session));
   };
-  const signIn = async ({ email }) => {
-    db.profiles[0].email = email || "magu@demo.com"; // tú eres siempre el primer usuario de la demo
+  const signIn = async ({ email, options }) => {
+    db.profiles[0].email = email || "yo@demo.com"; // tú eres siempre el primer usuario de la demo
+    const nick = options && options.data && options.data.nickname;
+    if (nick) db.profiles[0].name = nick;
     save();
     setSession({ user: { id: "u1", email: db.profiles[0].email } });
     return { error: null };

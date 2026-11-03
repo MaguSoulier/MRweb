@@ -49,8 +49,6 @@ drop policy if exists admin on allowed_emails;
 drop policy if exists miembros on allowed_emails;
 
 create policy equipo on profiles for select to authenticated using (is_member());
-create policy propio on profiles for update to authenticated
-  using (id = auth.uid() and is_member()) with check (id = auth.uid());
 create policy equipo on projects for all to authenticated using (is_member()) with check (is_member());
 create policy equipo on tasks for all to authenticated using (is_member()) with check (is_member());
 

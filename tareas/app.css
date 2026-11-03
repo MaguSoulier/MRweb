@@ -39,9 +39,18 @@ textarea { resize: vertical; min-height: 96px; line-height: 1.45; }
 
 
 /* ---------- Acceso ---------- */
-#auth { animation: rise var(--dur-med) var(--ease-out) both; margin: 15vh auto; background: var(--color-surface); padding: 28px; border: 1px solid var(--color-black); border-radius: var(--radius); width: min(360px, 92vw); display: flex; flex-direction: column; gap: 10px; }
+#auth { animation: rise var(--dur-med) var(--ease-out) both; min-height: 100vh; padding: 51px 16px 129px; background: var(--color-surface-sidebar); display: flex; flex-direction: column; align-items: center; gap: 29px; }
+/* Logo: el papel gris se funde con el fondo (multiplicar) y el contraste alto deja solo la tinta, como en la web principal */
+.auth-logo { width: 145px; height: 145px; object-fit: cover; mix-blend-mode: multiply; filter: grayscale(1) brightness(1.1) contrast(4); }
+.auth-card { background: var(--color-surface); padding: 28px; border-radius: var(--radius); width: min(360px, 100%); }
+.auth-card section, .auth-card form { display: flex; flex-direction: column; gap: 10px; }
 #auth h1 { margin: 0 0 6px; font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); }
-#auth .row { display: flex; gap: 8px; } #auth .row button { flex: 1; padding: 8px 12px; }
+#auth p { margin: 0; }
+#auth p + p { margin-top: 10px; }
+#auth input { border: 1px solid var(--color-basic-800); border-radius: var(--radius); background: var(--color-surface); padding: 11px 14px; }
+#auth input::placeholder { color: var(--color-text-faint); }
+#auth input:hover { border-color: var(--color-hover-border); }
+.auth-actions { display: flex; gap: 8px; margin-top: 12px; } .auth-actions button { flex: 1; padding: 9px 13px; border-color: var(--color-black); }
 .err { color: var(--color-danger); font-size: var(--font-size-small); min-height: 1em; }
 
 /* ---------- Estructura ---------- */

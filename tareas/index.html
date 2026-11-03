@@ -15,13 +15,43 @@
 <body>
 
 <div id="auth" hidden>
-  <h1>Tareas del equipo</h1>
-  <input id="a-email" type="email" placeholder="Correo electrónico" autocomplete="email">
-  <input id="a-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="current-password">
-  <div class="err" id="a-err"></div>
-  <div class="row">
-    <button class="primary" id="a-login">Entrar</button>
-    <button id="a-signup">Crear cuenta</button>
+  <video class="auth-logo" autoplay loop muted playsinline aria-label="Media Resma">
+    <source src="logo.mp4" type="video/mp4">
+  </video>
+  <div class="auth-card">
+    <section id="auth-welcome">
+      <h1>Hola amigues ;)</h1>
+      <p class="light">La idea es que se creen una cuenta y cuando estemos los 5 elimino esa opción.</p>
+      <p class="light">No agregué un botón de “olvidé mi contraseña” así que acuérdensela.</p>
+      <div class="auth-actions">
+        <button type="button" id="go-login">Entrar</button>
+        <button type="button" class="primary" id="go-signup">Crear cuenta</button>
+      </div>
+    </section>
+
+    <form id="auth-login" hidden>
+      <h1>Entrar</h1>
+      <input id="l-email" type="email" placeholder="Correo electrónico" autocomplete="email" required>
+      <input id="l-pass" type="password" placeholder="Contraseña" autocomplete="current-password" required>
+      <div class="err" id="l-err" role="alert"></div>
+      <div class="auth-actions">
+        <button type="button" data-back>Volver</button>
+        <button type="submit" class="primary">Entrar</button>
+      </div>
+    </form>
+
+    <form id="auth-signup" hidden>
+      <h1>Esperemos que funcioneeeeee</h1>
+      <input id="s-email" type="email" placeholder="Correo electrónico" autocomplete="email" required>
+      <input id="s-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="new-password" minlength="6" required>
+      <input id="s-pass2" type="password" placeholder="Repetir contraseña" autocomplete="new-password" required>
+      <input id="s-nick" type="text" maxlength="24" placeholder="Apodo (el que va a aparecer en la web)" autocomplete="nickname" required>
+      <div class="err" id="s-err" role="alert"></div>
+      <div class="auth-actions">
+        <button type="button" data-back>Volver</button>
+        <button type="submit" class="primary">Crear cuenta</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -38,7 +68,6 @@
     </section>
     <div class="me">
       <span id="me"></span>
-      <button class="ghost" id="rename-me">Cambiar mi nombre</button>
       <button class="ghost" id="logout">Salir</button>
     </div>
   </aside>
@@ -131,15 +160,41 @@ async function run(q) {
 }
 
 /* ---------- Autenticación ---------- */
-function showAuth() { $("#app").hidden = true; $("#auth").hidden = false; }
-async function auth(kind) {
-  $("#a-err").textContent = "";
-  const creds = { email: $("#a-email").value.trim(), password: $("#a-pass").value };
-  const { error } = kind === "signup" ? await sb.auth.signUp(creds) : await sb.auth.signInWithPassword(creds);
-  if (error) $("#a-err").textContent = error.message;
+const AUTH_STEPS = ["welcome", "login", "signup"];
+function showAuthStep(step) {
+  for (const s of AUTH_STEPS) $("#auth-" + s).hidden = s !== step;
+  for (const e of document.querySelectorAll("#auth .err")) e.textContent = "";
+  const first = $("#auth-" + step + " input");
+  if (first) first.focus();
 }
-$("#a-login").onclick = () => auth("login");
-$("#a-signup").onclick = () => auth("signup");
+function showAuth() { $("#app").hidden = true; $("#auth").hidden = false; showAuthStep("welcome"); }
+$("#go-login").onclick = () => showAuthStep("login");
+$("#go-signup").onclick = () => showAuthStep("signup");
+for (const b of document.querySelectorAll("#auth [data-back]")) b.onclick = () => showAuthStep("welcome");
+
+$("#auth-login").onsubmit = async (e) => {
+  e.preventDefault();
+  $("#l-err").textContent = "";
+  const { error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
+  if (error) $("#l-err").textContent = error.message;
+};
+$("#auth-signup").onsubmit = async (e) => {
+  e.preventDefault();
+  const err = $("#s-err");
+  err.textContent = "";
+  const password = $("#s-pass").value, nickname = $("#s-nick").value.trim();
+  if (password.length < 6) { err.textContent = "La contraseña debe tener al menos 6 caracteres."; return; }
+  if (password !== $("#s-pass2").value) { err.textContent = "Las contraseñas no coinciden."; return; }
+  if (!nickname) { err.textContent = "Elige un apodo para crear tu cuenta."; return; }
+  const { error } = await sb.auth.signUp({
+    email: $("#s-email").value.trim(), password,
+    options: { data: { nickname } }, // el trigger de la base de datos lo copia al perfil
+  });
+  // Si el correo no está en allowed_emails, el trigger de la base de datos aborta el alta y Supabase devuelve este error genérico
+  if (error) err.textContent = /database error saving new user/i.test(error.message)
+    ? "¡Alerta extranjero! Sólo integrantes de Media Resma permitidos"
+    : error.message;
+};
 $("#logout").onclick = () => sb.auth.signOut();
 
 sb.auth.onAuthStateChange((_event, session) => {
@@ -406,13 +461,6 @@ $("#proj-del").onclick = async () => {
   await run(sb.from("projects").delete().eq("id", p.id));
   await load();
 };
-$("#rename-me").onclick = async () => {
-  const name = prompt("¿Cómo quieres que te vea el equipo?", userName(state.me.id));
-  if (!name || !name.trim()) return;
-  await run(sb.from("profiles").update({ name: name.trim() }).eq("id", state.me.id));
-  load();
-};
-
 /* ---------- Pintado ---------- */
 function render() {
   renderCalendar();

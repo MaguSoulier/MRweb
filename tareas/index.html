@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Tareas del equipo</title>
+<link rel="icon" type="image/png" href="MR_tareas_icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800&family=Chivo+Mono:wght@300;400;600&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div id="auth" hidden>
+  <h1>Tareas del equipo</h1>
+  <input id="a-email" type="email" placeholder="Correo electrónico" autocomplete="email">
+  <input id="a-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="current-password">
+  <div class="err" id="a-err"></div>
+  <div class="row">
+    <button class="primary" id="a-login">Entrar</button>
+    <button id="a-signup">Crear cuenta</button>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <aside class="side">
+    <section id="cal"></section>
+    <section>
+      <h2><button type="button" class="h2btn" id="proj-open" aria-haspopup="true" title="Editar proyectos y prioridades">Proyectos</button><span class="h2actions"><button class="ghost" id="proj-edit" title="Editar proyectos y prioridades" aria-label="Editar proyectos y prioridades"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button><button class="ghost" id="proj-new" title="Nuevo proyecto" aria-label="Nuevo proyecto"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></span></h2>
+      <ul class="navlist" id="proj-list"></ul>
+    </section>
+    <section>
+      <h2>Personas</h2>
+      <ul class="navlist" id="people-list"></ul>
+    </section>
+    <div class="me">
+      <span id="me"></span>
+      <button class="ghost" id="rename-me">Cambiar mi nombre</button>
+      <button class="ghost" id="logout">Salir</button>
+    </div>
+  </aside>
+
+  <main>
+    <h1 class="title" id="title"></h1>
+    <div class="toolbar">
+      <button class="pill" id="btn-view"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill" id="btn-sort"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="pill day-chip" id="day-chip" hidden></button>
+      <span id="proj-actions" hidden>
+        <button class="ghost" id="proj-rename">Renombrar proyecto</button>
+        <button class="ghost" id="proj-del">Eliminar proyecto</button>
+      </span>
+    </div>
+    <div id="content"></div>
+  </main>
+
+  <aside class="detail" id="detail"></aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="mock.js"></script>
+<script>
+// Con los valores de ejemplo en config.js se usa el modo demo (datos locales, sin Supabase)
+const sb = SUPABASE_URL.includes("TU-PROYECTO")
+  ? createMockClient()
+  : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = (s) => document.querySelector(s);
+const STATE_LABEL = { todo: "Sin iniciar", doing: "En proceso", done: "Completada", late: "Atrasada" };
+const STATE_RANK = { late: 0, doing: 1, todo: 2, done: 3 };
+const SORTS = { due: "Fecha límite", priority: "Prioridad", status: "Estado", title: "Nombre", project: "Proyecto (relevancia)" };
+const SORT_SHORT = { due: "fecha", priority: "prioridad", status: "estado", title: "nombre", project: "proyecto" };
+const VIEWS = { list: "Lista", board: "Tablero", calendar: "Calendario" };
+const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const WEEKDAYS = ["Lu", "Mar", "Mie", "Jue", "Vie", "Sáb", "Do"];
+const PREFS_KEY = "mr_tareas_prefs";
+
+const now = new Date();
+const state = {
+  me: null, projects: [], tasks: [], users: [],
+  focus: { type: "all" },           // { type: "user" | "project" | "all", id }
+  view: "list", sort: { key: "due", dir: 1 },
+  day: null,                         // filtro por fecha límite (AAAA-MM-DD)
+  month: { y: now.getFullYear(), m: now.getMonth() },
+  taskId: null,                      // id de la tarea abierta, "new" si es nueva, null si el panel está cerrado
+  draft: null, draftBase: "",        // borrador que se edita en el panel y su estado inicial (para saber si hay cambios)
+};
+try { Object.assign(state, JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")); } catch {}
+const savePrefs = () => {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ view: state.view, sort: state.sort })); } catch {}
+};
+
+let dragging = false, reloadTimer = null, channel = null, lastContentKey = "", menuHandler = null;
+
+/* ---------- Utilidades ---------- */
+function el(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k === "data") Object.assign(e.dataset, v);
+    else if (k.startsWith("aria-") || k === "role") e.setAttribute(k, v);
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e[k] = v;
+  }
+  e.append(...kids);
+  return e;
+}
+const pad = (n) => String(n).padStart(2, "0");
+const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayISO = () => iso(new Date());
+const fmtDate = (s) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : "—");
+
+const userById = (id) => state.users.find((u) => u.id === id);
+const userName = (id) => (userById(id) || {}).name || "?";
+const projectById = (id) => state.projects.find((p) => p.id === id);
+const projectName = (id) => (projectById(id) || {}).name || "";
+// Relevancia de un proyecto = su posición en la lista (se define arrastrando); el primero es el más importante
+const projectRank = (p) => p.position ?? (p.priority ?? 2) * 1000; // «priority» solo existe en datos antiguos
+const byProjectRank = (a, b) => projectRank(a) - projectRank(b) || a.name.localeCompare(b.name);
+// Estado visible de una tarea: "late" es derivado (fecha pasada y sin completar)
+const tstate = (t) => (t.status === "done" ? "done" : t.due_date && t.due_date < todayISO() ? "late" : t.status);
+
+async function run(q) {
+  const { data, error } = await q;
+  if (error) { alert("Error: " + error.message); throw error; }
+  return data;
+}
+
+/* ---------- Autenticación ---------- */
+function showAuth() { $("#app").hidden = true; $("#auth").hidden = false; }
+async function auth(kind) {
+  $("#a-err").textContent = "";
+  const creds = { email: $("#a-email").value.trim(), password: $("#a-pass").value };
+  const { error } = kind === "signup" ? await sb.auth.signUp(creds) : await sb.auth.signInWithPassword(creds);
+  if (error) $("#a-err").textContent = error.message;
+}
+$("#a-login").onclick = () => auth("login");
+$("#a-signup").onclick = () => auth("signup");
+$("#logout").onclick = () => sb.auth.signOut();
+
+sb.auth.onAuthStateChange((_event, session) => {
+  if (session && !state.me) start(session.user);
+  else if (!session) { state.me = null; showAuth(); }
+});
+
+async function start(user) {
+  state.me = user;
+  state.focus = { type: "user", id: user.id };
+  $("#auth").hidden = true; $("#app").hidden = false;
+  $("#me").textContent = user.email + (sb.isMock ? " · modo demo" : "");
+  await load();
+  if (channel && sb.removeChannel) sb.removeChannel(channel);
+  channel = sb.channel("cambios")
+    .on("postgres_changes", { event: "*", schema: "public" }, scheduleLoad)
+    .subscribe();
+}
+
+/* ---------- Datos ---------- */
+function scheduleLoad() {
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => { if (!dragging) load(); }, 150);
+}
+async function load() {
+  const [projects, users, tasks] = await Promise.all([
+    run(sb.from("projects").select("*").order("name")),
+    run(sb.from("profiles").select("*").order("name")),
+    run(sb.from("tasks").select("*").order("created_at")),
+  ]);
+  users.sort((a, b) => (b.id === state.me.id) - (a.id === state.me.id) || a.name.localeCompare(b.name));
+  Object.assign(state, { projects, users, tasks });
+  const f = state.focus;
+  if ((f.type === "project" && !projectById(f.id)) || (f.type === "user" && !userById(f.id))) state.focus = { type: "all" };
+  if (state.taskId && state.taskId !== "new" && !tasks.some((t) => t.id === state.taskId)) { state.taskId = null; state.draft = null; }
+  render();
+}
+
+async function updateTask(id, patch) {
+  Object.assign(state.tasks.find((t) => t.id === id), patch); // se ve al instante
+  if (state.draft && state.taskId === id) { // si la tarea está abierta, el borrador sigue al cambio
+    Object.assign(state.draft, patch);
+    state.draftBase = JSON.stringify({ ...JSON.parse(state.draftBase), ...patch });
+  }
+  render();
+  await run(sb.from("tasks").update(patch).eq("id", id));
+  load();
+}
+// ---------- Borrador de la tarea abierta en el panel ----------
+// Los cambios se editan sobre una copia y no se guardan hasta pulsar «Guardar cambios».
+const DRAFT_FIELDS = ["title", "description", "project_id", "assignees", "status", "priority", "due_date"];
+const pickDraft = (t) => Object.fromEntries(DRAFT_FIELDS.map((k) => [k, Array.isArray(t[k]) ? [...t[k]] : t[k]]));
+const isDirty = () => !!state.draft && JSON.stringify(state.draft) !== state.draftBase;
+// Si hay cambios sin guardar pide confirmación; devuelve false si se decide seguir editando
+const canDiscard = () => !isDirty() || confirm("¿Descartar los cambios sin guardar?");
+function openDraft(draft, id) { state.taskId = id; state.draft = draft; state.draftBase = JSON.stringify(draft); render(); }
+
+function selectTask(id) { // abre una tarea existente para editarla
+  if (id === state.taskId || !canDiscard()) return;
+  const t = state.tasks.find((t) => t.id === id);
+  if (t) openDraft(pickDraft(t), id);
+}
+function newTask(due = state.day) { // abre una tarea en blanco: no existe hasta que se guarda
+  if (!canDiscard()) return;
+  const f = state.focus;
+  const project_id = f.type === "project" ? f.id : (state.projects[0] || {}).id;
+  if (!project_id) { alert("Crea primero un proyecto con «+» junto a Proyectos."); return; }
+  openDraft({
+    title: "Nueva tarea", description: "", project_id, status: "todo", priority: 2, due_date: due,
+    assignees: [f.type === "user" ? f.id : state.me.id],
+  }, "new");
+  const ttl = $("#detail .ttl");
+  if (ttl) { ttl.focus(); ttl.select(); }
+}
+function discardDraft() { state.taskId = null; state.draft = null; state.draftBase = ""; render(); }
+function closePanel() { if (state.draft && canDiscard()) discardDraft(); } // clic fuera o Esc
+async function saveDraft() {
+  const d = state.draft;
+  if (!d.title.trim()) { $("#detail .ttl").focus(); return; }
+  const fields = { ...d, title: d.title.trim() };
+  const isNew = state.taskId === "new", id = state.taskId;
+  state.taskId = null; state.draft = null; state.draftBase = "";
+  await run(isNew ? sb.from("tasks").insert(fields) : sb.from("tasks").update(fields).eq("id", id));
+  load();
+}
+
+/* ---------- Selección, orden y filtros ---------- */
+function setFocus(type, id) {
+  const f = state.focus;
+  state.focus = f.type === type && f.id === id ? { type: "all" } : { type, id }; // volver a pulsar = ver todo
+  render();
+}
+const focusTasks = () => state.tasks.filter((t) => {
+  const f = state.focus;
+  return f.type === "user" ? t.assignees.includes(f.id) : f.type === "project" ? t.project_id === f.id : true;
+});
+function sortTasks(list) {
+  const { key, dir } = state.sort;
+  const projectOrder = new Map([...state.projects].sort(byProjectRank).map((p, i) => [p.id, i]));
+  const val = (t) => key === "due" ? t.due_date || "9999"
+    : key === "priority" ? t.priority
+    : key === "status" ? STATE_RANK[tstate(t)]
+    : key === "project" ? projectOrder.get(t.project_id) ?? 999
+    : t.title.toLowerCase();
+  return [...list].sort((a, b) => {
+    const x = val(a), y = val(b);
+    return (x < y ? -1 : x > y ? 1 : 0) * dir || a.title.localeCompare(b.title);
+  });
+}
+const visibleTasks = () => sortTasks(focusTasks().filter((t) => !state.day || t.due_date === state.day));
+function sortBy(key) {
+  state.sort = state.sort.key === key ? { key, dir: -state.sort.dir } : { key, dir: 1 };
+  savePrefs(); render();
+}
+
+function closeMenu() {
+  const p = $(".popover");
+  if (p) p.remove();
+  document.querySelectorAll(".datebtn.open").forEach((b) => b.classList.remove("open"));
+  if (menuHandler) { document.removeEventListener("click", menuHandler); menuHandler = null; }
+}
+// Muestra un nodo flotante junto a un botón; se cierra al hacer clic fuera o con Esc
+function openPopover(anchor, node) {
+  closeMenu();
+  node.classList.add("popover");
+  node.addEventListener("click", (e) => e.stopPropagation());
+  document.body.append(node);
+  const r = anchor.getBoundingClientRect(), w = node.offsetWidth, h = node.offsetHeight;
+  const below = r.bottom + 6 + h <= innerHeight - 12 || r.top - 6 - h < 12;
+  node.style.left = Math.max(12, Math.min(r.left, innerWidth - w - 12)) + scrollX + "px";
+  node.style.top = (below ? r.bottom + 6 : r.top - 6 - h) + scrollY + "px";
+  node.style.transformOrigin = below ? "top left" : "bottom left";
+  setTimeout(() => { menuHandler = closeMenu; document.addEventListener("click", menuHandler); }, 0);
+}
+function openMenu(anchor, items) {
+  openPopover(anchor, el("div", { class: "menu" }, ...items.map(([label, fn, on]) =>
+    el("button", { textContent: (on ? "✓ " : "   ") + label, onclick: () => { closeMenu(); fn(); } }))));
+}
+$("#btn-view").onclick = (e) => openMenu(e.currentTarget, Object.entries(VIEWS).map(([k, label]) =>
+  [label, () => { state.view = k; savePrefs(); render(); }, state.view === k]));
+$("#btn-sort").onclick = (e) => openMenu(e.currentTarget, Object.entries(SORTS).map(([k, label]) => {
+  const on = state.sort.key === k;
+  return [label + (on ? (state.sort.dir === 1 ? "  ↑" : "  ↓") : ""), () => sortBy(k), on];
+}));
+$("#day-chip").onclick = () => { state.day = null; render(); };
+
+/* ---------- Proyectos y personas ---------- */
+const GRIP_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+
+// Lista de todos los proyectos: se edita el nombre, se arrastran para ordenarlos por relevancia
+// (el primero es el más importante) y se crean nuevos
+function openProjectList(anchor, focusNew = false) {
+  const pop = el("div", { class: "projpop" });
+  const draft = { name: "" }; // nombre del proyecto que se está a punto de crear
+  const sorted = () => [...state.projects].sort(byProjectRank);
+
+  // Renumera todos los proyectos según el nuevo orden y guarda solo los que cambian de posición
+  const applyOrder = async (order, focusId) => {
+    const saves = [];
+    order.forEach((p, i) => {
+      const position = (i + 1) * 1000;
+      if (p.position !== position) { p.position = position; saves.push(sb.from("projects").update({ position }).eq("id", p.id)); }
+    });
+    render(); paint(false, focusId);
+    await Promise.all(saves.map(run));
+    await load(); paint(false, focusId);
+  };
+  const reorder = (dragId, targetId, after) => {
+    if (dragId === targetId || !projectById(dragId)) return;
+    const order = sorted().filter((p) => p.id !== dragId);
+    order.splice(order.findIndex((p) => p.id === targetId) + (after ? 1 : 0), 0, projectById(dragId));
+    applyOrder(order, dragId);
+  };
+  const move = (id, delta) => { // alternativa con teclado: flechas ↑ ↓ sobre el icono de arrastre
+    const order = sorted(), i = order.findIndex((p) => p.id === id), j = i + delta;
+    if (j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    applyOrder(order, id);
+  };
+
+  const projectRow = (p, i) => {
+    const grip = el("button", {
+      type: "button", class: "grip", data: { id: p.id }, title: "Arrastra para cambiar su relevancia (o usa ↑ ↓)",
+      "aria-label": `Reordenar ${p.name}`,
+      onkeydown: (e) => {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); move(p.id, e.key === "ArrowUp" ? -1 : 1); }
+      },
+    });
+    grip.insertAdjacentHTML("afterbegin", GRIP_ICON);
+    const row = el("div", { class: "projrow" }, grip,
+      el("span", { class: "rank", textContent: i + 1 }),
+      el("input", {
+        value: p.name, "aria-label": "Nombre del proyecto",
+        onchange: async (e) => {
+          const name = e.target.value.trim(), cur = projectById(p.id);
+          if (!name || !cur) { e.target.value = p.name; return; }
+          cur.name = p.name = name;
+          render();
+          await run(sb.from("projects").update({ name }).eq("id", p.id));
+          load();
+        },
+      }));
+    const clear = () => row.classList.remove("drop-before", "drop-after");
+    // Solo se arrastra desde el icono, para poder seleccionar texto en el campo del nombre
+    grip.addEventListener("mousedown", () => { row.draggable = true; });
+    row.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", p.id); e.dataTransfer.effectAllowed = "move";
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => { row.draggable = false; row.classList.remove("dragging"); });
+    row.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const r = row.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      row.classList.toggle("drop-after", after); row.classList.toggle("drop-before", !after);
+    });
+    row.addEventListener("dragleave", clear);
+    row.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const after = row.classList.contains("drop-after");
+      clear();
+      reorder(e.dataTransfer.getData("text/plain"), p.id, after);
+    });
+    return row;
+  };
+
+  const add = async () => {
+    const name = draft.name.trim();
+    if (!name) { pop.querySelector(".newproj").focus(); return; }
+    draft.name = "";
+    const position = Math.max(0, ...state.projects.map(projectRank)) + 1000; // entra al final: la menos relevante
+    await run(sb.from("projects").insert({ name, position }));
+    await load();
+    paint(true);
+  };
+  const newRow = () => el("div", { class: "projnew" },
+    el("span", { class: "lbl", textContent: "Nuevo proyecto" }),
+    el("div", { class: "projnew-row" },
+      el("input", {
+        class: "newproj", value: draft.name, placeholder: "Nombre del proyecto", "aria-label": "Nombre del nuevo proyecto",
+        oninput: (e) => { draft.name = e.target.value; },
+        onkeydown: (e) => { if (e.key === "Enter") add(); },
+      }),
+      el("button", { type: "button", class: "cta", textContent: "+ Añadir", onclick: add })));
+
+  const paint = (focusNewInput = false, focusId = null) => {
+    pop.replaceChildren(
+      el("p", { class: "projhint", textContent: "Arrastra cada proyecto para ordenarlo: el primero es el más importante y sale antes al ordenar las tareas por proyecto." }),
+      ...(state.projects.length ? sorted().map(projectRow) : [el("p", { class: "empty", textContent: "Aún no hay proyectos." })]),
+      newRow());
+    if (focusNewInput) pop.querySelector(".newproj").focus();
+    if (focusId) { const g = pop.querySelector(`.grip[data-id="${focusId}"]`); if (g) g.focus(); }
+  };
+  paint();
+  openPopover(anchor, pop);
+  if (focusNew) pop.querySelector(".newproj").focus();
+}
+$("#proj-open").onclick = (e) => openProjectList(e.currentTarget);
+$("#proj-edit").onclick = () => openProjectList($("#proj-open")); // el lápiz abre la misma lista
+$("#proj-new").onclick = () => openProjectList($("#proj-open"), true); // el «+» abre la lista lista para escribir
+$("#proj-rename").onclick = () => openProjectList($("#proj-open")); // el nombre se edita en la lista
+$("#proj-del").onclick = async () => {
+  const p = projectById(state.focus.id);
+  if (!confirm(`¿Eliminar el proyecto "${p.name}" con todas sus tareas?`)) return;
+  await run(sb.from("projects").delete().eq("id", p.id));
+  await load();
+};
+$("#rename-me").onclick = async () => {
+  const name = prompt("¿Cómo quieres que te vea el equipo?", userName(state.me.id));
+  if (!name || !name.trim()) return;
+  await run(sb.from("profiles").update({ name: name.trim() }).eq("id", state.me.id));
+  load();
+};
+
+/* ---------- Pintado ---------- */
+function render() {
+  renderCalendar();
+  renderNav();
+  const title = $("#title"), text = titleText();
+  if (title.textContent !== text) {
+    title.textContent = text;
+    title.classList.remove("swap"); void title.offsetWidth; title.classList.add("swap");
+  }
+  renderToolbar();
+  renderContent();
+  renderDetail();
+}
+function titleText() {
+  const f = state.focus;
+  return f.type === "user" ? userName(f.id) : f.type === "project" ? projectName(f.id) : "Todas las tareas";
+}
+function renderToolbar() {
+  const chip = $("#day-chip");
+  chip.hidden = !state.day || state.view === "calendar";
+  if (state.day) chip.textContent = `Fecha: ${fmtDate(state.day)} ✕`;
+  $("#proj-actions").hidden = state.focus.type !== "project";
+  $("#btn-sort").hidden = state.view === "calendar"; // en el calendario el orden lo da la fecha
+  $("#btn-view span").textContent = VIEWS[state.view];
+  $("#btn-sort span").textContent = "Ordenado por " + SORT_SHORT[state.sort.key];
+}
+
+const dot = (s, title = "") => el("span", { class: "dot", data: { s }, title });
+
+const CAL_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/></svg>';
+
+// Calendario compartido: lo usan la barra lateral (con puntos) y el selector de fecha
+function calendarView(month, { onShift, onPick, selected = null, dotsFor = null, className = "" }) {
+  const { y, m } = month;
+  const off = (new Date(y, m, 1).getDay() + 6) % 7; // semana que empieza en lunes
+  const rows = Math.ceil((off + new Date(y, m + 1, 0).getDate()) / 7);
+  const td = todayISO(), todayCol = (new Date().getDay() + 6) % 7;
+  const grid = el("div", { class: ("cal " + className).trim() },
+    ...WEEKDAYS.map((w, i) => el("span", { class: "wd" + (i === todayCol ? " today" : ""), textContent: w })));
+  for (let i = 0; i < rows * 7; i++) {
+    const d = new Date(y, m, 1 - off + i), s = iso(d);
+    const marks = dotsFor ? dotsFor(s) : [];
+    grid.append(el("button", {
+      type: "button",
+      class: "day" + (d.getMonth() !== m ? " out" : "") + (s === td ? " today" : "") + (s === selected ? " sel" : ""),
+      title: marks.length ? `${marks.length} tarea(s)` : "",
+      onclick: () => onPick(s),
+    }, el("span", { class: "n", textContent: d.getDate() }),
+      ...(dotsFor ? [el("span", { class: "dots" }, ...marks.slice(0, 3))] : [])));
+  }
+  const head = el("div", { class: "cal-head" },
+    el("span", {}, MONTHS[m] + " ", el("span", { class: "year", textContent: y })),
+    el("span", { class: "cal-nav" },
+      el("button", { type: "button", textContent: "‹", title: "Mes anterior", onclick: () => onShift(-1) }),
+      el("button", { type: "button", textContent: "›", title: "Mes siguiente", onclick: () => onShift(1) })));
+  return el("div", { class: "calbox" }, head, grid);
+}
+const shiftMonth = (month, n) => { const d = new Date(month.y, month.m + n, 1); return { y: d.getFullYear(), m: d.getMonth() }; };
+
+function renderCalendar() {
+  const byDay = {};
+  for (const t of focusTasks()) if (t.due_date) (byDay[t.due_date] ||= []).push(t);
+  $("#cal").replaceChildren(calendarView(state.month, {
+    selected: state.day,
+    dotsFor: (s) => (byDay[s] || []).map((t) => dot(tstate(t))),
+    onPick: (s) => { state.day = state.day === s ? null : s; render(); },
+    onShift: (n) => { state.month = shiftMonth(state.month, n); render(); },
+  }));
+}
+
+const fmtLong = (s) => `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}`;
+function openDatePicker(anchor, value, onchange) {
+  const start = value ? new Date(value + "T00:00:00") : new Date();
+  let month = { y: start.getFullYear(), m: start.getMonth() };
+  const pop = el("div", { class: "datepop" });
+  const choose = (v) => { closeMenu(); onchange(v); };
+  const paint = () => pop.replaceChildren(
+    calendarView(month, { className: "pick", selected: value, onPick: choose, onShift: (n) => { month = shiftMonth(month, n); paint(); } }),
+    el("div", { class: "datepop-foot" },
+      el("button", { type: "button", class: "ghost", textContent: "Hoy", onclick: () => choose(todayISO()) }),
+      el("button", { type: "button", class: "ghost", textContent: "Quitar fecha", onclick: () => choose(null) })));
+  paint();
+  openPopover(anchor, pop);
+}
+function dateField(value, onchange) {
+  const btn = el("button", { type: "button", class: "datebtn" + (value ? "" : " empty") },
+    el("span", { textContent: value ? fmtLong(value) : "Sin fecha" }));
+  btn.insertAdjacentHTML("afterbegin", CAL_ICON);
+  btn.addEventListener("click", () => {
+    btn.classList.add("open");
+    openDatePicker(btn, value, onchange);
+  });
+  return btn;
+}
+
+function navItem(label, selected, onclick, dots) {
+  return el("li", {}, el("button", { class: "navitem" + (selected ? " sel" : ""), onclick },
+    el("span", { textContent: label }), el("span", { class: "dots" }, ...dots)));
+}
+function renderNav() {
+  const f = state.focus;
+  // Proyecto: un punto por persona asignada, del color de su tarea más urgente en ese proyecto
+  $("#proj-list").replaceChildren(...[...state.projects].sort(byProjectRank).map((p) => {
+    const worst = new Map();
+    for (const t of state.tasks.filter((t) => t.project_id === p.id)) {
+      const s = tstate(t);
+      for (const uid of t.assignees) if (!worst.has(uid) || STATE_RANK[s] < STATE_RANK[worst.get(uid)]) worst.set(uid, s);
+    }
+    const dots = [...worst].map(([uid, s]) => dot(s, `${userName(uid)} · ${STATE_LABEL[s]}`));
+    return navItem(p.name, f.type === "project" && f.id === p.id, () => setFocus("project", p.id), dots);
+  }));
+  // Persona: un punto por tarea asignada
+  $("#people-list").replaceChildren(...state.users.map((u) => {
+    const mine = state.tasks.filter((t) => t.assignees.includes(u.id));
+    const dots = mine.slice(0, 8).map((t) => dot(tstate(t), `${t.title} · ${STATE_LABEL[tstate(t)]}`));
+    return navItem(u.name + (u.id === state.me.id ? " (yo)" : ""), f.type === "user" && f.id === u.id, () => setFocus("user", u.id), dots);
+  }));
+}
+
+function renderContent() {
+  const content = $("#content");
+  // Solo se anima la entrada cuando cambia lo que se está viendo, no en cada actualización
+  const key = [state.view, state.focus.type, state.focus.id, state.view === "calendar" ? state.month.y + "-" + state.month.m : state.day, state.sort.key, state.sort.dir].join("|");
+  content.classList.toggle("enter", key !== lastContentKey);
+  lastContentKey = key;
+  const tasks = visibleTasks();
+  content.replaceChildren(state.view === "board" ? renderBoard(tasks)
+    : state.view === "calendar" ? renderMonth(focusTasks()) // el calendario ignora el filtro por día
+    : renderList(tasks));
+}
+
+const statePill = (s) => el("span", { class: "state-pill", data: { s }, textContent: STATE_LABEL[s] });
+function checkButton(t) {
+  const done = t.status === "done";
+  return el("button", {
+    class: "check", textContent: done ? "✓" : "", title: done ? "Marcar como pendiente" : "Marcar como completada",
+    "aria-pressed": String(done),
+    onclick: (e) => { e.stopPropagation(); updateTask(t.id, { status: done ? "todo" : "done" }); },
+  });
+}
+// Botón negro "+ Añadir tarea": crea la tarea y abre el panel para rellenarla
+function addRow() {
+  return el("div", { class: "addrow" },
+    el("button", { type: "button", class: "cta", textContent: "+ Añadir tarea", onclick: () => newTask() }));
+}
+function taskRow(t) {
+  const s = tstate(t), done = t.status === "done";
+  const desc = (t.description || "").split("\n")[0];
+  return el("div", { class: "row" + (t.id === state.taskId ? " sel" : ""), onclick: () => selectTask(t.id) },
+    el("div", { class: "cell-title" }, checkButton(t),
+      el("div", { class: "tcol" },
+        el("span", { class: "tt" + (done ? " done" : ""), textContent: t.title, title: t.title }),
+        ...(desc && !done ? [el("span", { class: "desc", textContent: desc })] : []))),
+    el("span", { class: "light c-proj", textContent: projectName(t.project_id) }),
+    statePill(s),
+    el("span", { class: "light mono" + (s === "late" ? " late-date" : ""), textContent: fmtDate(t.due_date) }),
+    el("span", { class: "light mono c-prio", textContent: "P" + t.priority }));
+}
+// Pendientes arriba, botón de añadir en medio y completadas debajo
+function renderList(tasks) {
+  const head = (label, key, cls = "") => el("span", { class: cls, data: { sort: key }, textContent: label + (state.sort.key === key ? (state.sort.dir === 1 ? " ↑" : " ↓") : ""), onclick: () => sortBy(key) });
+  const list = el("div", { class: "list" },
+    el("div", { class: "row head" },
+      head("Tarea", "title", "h-title"), head("Proyecto", "project", "c-proj"), head("Estado", "status"),
+      head("Fecha límite", "due"), head("Prioridad", "priority", "c-prio")));
+  list.append(...tasks.filter((t) => t.status !== "done").map(taskRow));
+  if (!tasks.length) list.append(el("p", { class: "empty", textContent: "No hay tareas para esta selección." }));
+  list.append(addRow());
+  list.append(...tasks.filter((t) => t.status === "done").map(taskRow));
+  list.querySelectorAll(".row:not(.head)").forEach((r, i) => r.style.setProperty("--i", Math.min(i, 10)));
+  return list;
+}
+
+/* ---------- Vista calendario ---------- */
+const expandedDays = new Set();
+function dragSource(node, id) {
+  node.addEventListener("dragstart", (e) => {
+    dragging = true; node.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", id); e.dataTransfer.effectAllowed = "move";
+  });
+  node.addEventListener("dragend", () => { dragging = false; node.classList.remove("dragging"); scheduleLoad(); });
+}
+function dropTarget(node, onDrop) {
+  node.addEventListener("dragover", (e) => { e.preventDefault(); node.classList.add("over"); });
+  node.addEventListener("dragleave", (e) => { if (!node.contains(e.relatedTarget)) node.classList.remove("over"); });
+  node.addEventListener("drop", (e) => {
+    e.preventDefault(); node.classList.remove("over"); dragging = false;
+    const id = e.dataTransfer.getData("text/plain");
+    if (id) onDrop(id);
+  });
+}
+function monthChip(t) {
+  const s = tstate(t);
+  const chip = el("div", {
+    class: "mchip" + (t.id === state.taskId ? " sel" : "") + (t.status === "done" ? " done" : ""),
+    data: { s }, draggable: true, title: `${t.title} · ${STATE_LABEL[s]} · ${projectName(t.project_id)}`,
+    onclick: () => selectTask(t.id),
+  }, el("span", { textContent: t.title }));
+  dragSource(chip, t.id);
+  return chip;
+}
+function renderMonth(tasks) {
+  const { y, m } = state.month;
+  const off = (new Date(y, m, 1).getDay() + 6) % 7; // semana que empieza en lunes
+  const rows = Math.ceil((off + new Date(y, m + 1, 0).getDate()) / 7);
+  const byDay = {}, undated = [];
+  for (const t of tasks) (t.due_date ? (byDay[t.due_date] ||= []) : undated).push(t);
+  const td = todayISO();
+  const go = (month) => { state.month = month; render(); };
+  const head = el("div", { class: "mcal-head" },
+    el("h2", {}, MONTHS[m] + " ", el("span", { class: "year", textContent: y })),
+    el("span", { class: "mcal-nav" },
+      el("button", { type: "button", class: "pill", textContent: "Hoy", onclick: () => go({ y: new Date().getFullYear(), m: new Date().getMonth() }) }),
+      el("button", { type: "button", class: "ghost", textContent: "‹", title: "Mes anterior", onclick: () => go(shiftMonth(state.month, -1)) }),
+      el("button", { type: "button", class: "ghost", textContent: "›", title: "Mes siguiente", onclick: () => go(shiftMonth(state.month, 1)) })));
+  const grid = el("div", { class: "mgrid" }, ...WEEKDAYS.map((w) => el("span", { class: "mwd", textContent: w })));
+  for (let i = 0; i < rows * 7; i++) {
+    const d = new Date(y, m, 1 - off + i), s = iso(d), list = byDay[s] || [];
+    const shown = expandedDays.has(s) ? list : list.slice(0, 3);
+    const cell = el("div", { class: "mday" + (d.getMonth() !== m ? " out" : "") + (s === td ? " today" : "") },
+      el("div", { class: "mday-top" },
+        el("span", { class: "mnum", textContent: d.getDate() }),
+        el("button", { type: "button", class: "ghost madd", textContent: "＋", title: "Añadir una tarea este día", onclick: () => newTask(s) })),
+      ...shown.map(monthChip));
+    if (list.length > shown.length) {
+      cell.append(el("button", { type: "button", class: "ghost more", textContent: `+${list.length - shown.length} más`, onclick: () => { expandedDays.add(s); render(); } }));
+    }
+    cell.style.setProperty("--i", Math.floor(i / 7));
+    dropTarget(cell, (id) => updateTask(id, { due_date: s }));
+    grid.append(cell);
+  }
+  const wrap = el("div", { class: "mcal" }, head, grid);
+  if (undated.length) {
+    const box = el("div", { class: "mundated" },
+      el("span", { class: "lbl", textContent: `Sin fecha (${undated.length})` }),
+      el("div", { class: "mchips" }, ...undated.map(monthChip)));
+    dropTarget(box, (id) => updateTask(id, { due_date: null }));
+    wrap.append(box);
+  }
+  return wrap;
+}
+
+function renderBoard(tasks) {
+  const board = el("div", { class: "board" });
+  ["todo", "doing", "done"].forEach((st, i) => {
+    const cards = el("div", { class: "bcards" }, ...tasks.filter((t) => t.status === st).map(boardCard));
+    const col = el("div", { class: "bcol" },
+      el("h3", {}, STATE_LABEL[st], el("span", { class: "count", textContent: cards.children.length })), cards);
+    col.addEventListener("dragover", (e) => { e.preventDefault(); col.classList.add("over"); });
+    col.addEventListener("dragleave", (e) => { if (!col.contains(e.relatedTarget)) col.classList.remove("over"); });
+    col.addEventListener("drop", (e) => {
+      e.preventDefault(); col.classList.remove("over"); dragging = false;
+      const id = e.dataTransfer.getData("text/plain");
+      if (id) updateTask(id, { status: st });
+    });
+    col.style.setProperty("--i", i);
+    board.append(col);
+  });
+  return el("div", {}, board, addRow()); // el botón queda fuera de las cajas, como en la lista
+}
+function boardCard(t) {
+  const s = tstate(t);
+  const card = el("div", { class: "bcard" + (t.id === state.taskId ? " sel" : ""), draggable: true, onclick: () => selectTask(t.id) },
+    el("div", { class: "tt", textContent: t.title }),
+    el("div", { class: "meta" }, statePill(s), el("span", { textContent: projectName(t.project_id) }),
+      el("span", { class: "mono", textContent: fmtDate(t.due_date) }), el("span", { class: "mono", textContent: "P" + t.priority })));
+  card.addEventListener("dragstart", (e) => {
+    dragging = true; card.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", t.id); e.dataTransfer.effectAllowed = "move";
+  });
+  card.addEventListener("dragend", () => { dragging = false; card.classList.remove("dragging"); scheduleLoad(); });
+  return card;
+}
+
+/* ---------- Panel de detalles ---------- */
+function select(options, value, onchange) {
+  const s = el("select", { onchange: (e) => onchange(e.target.value) });
+  for (const [v, label] of options) s.append(el("option", { value: v, textContent: label }));
+  s.value = value;
+  return s;
+}
+function segmented(options, value, onchange) {
+  return el("div", { class: "seg", role: "radiogroup" }, ...options.map(([v, label]) =>
+    el("button", { type: "button", class: "seg-item" + (v === value ? " on" : ""), textContent: label, role: "radio", "aria-checked": String(v === value), onclick: () => onchange(v) })));
+}
+const field = (label, control) => el("div", { class: "field" }, el("span", { class: "lbl", textContent: label }), control);
+
+// El panel se abre al añadir o pulsar una tarea y se cierra al guardar, cancelar, hacer clic fuera o con Esc
+function renderDetail() {
+  const box = $("#detail"), d = state.draft, id = String(state.taskId);
+  const active = document.activeElement;
+  const typing = box.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+  if (typing && d && box.dataset.id === id) return; // no pisar lo que se está escribiendo
+  $("#app").classList.toggle("detail-open", !!d);
+  if (!d) {
+    if (box.contains(active)) active.blur();
+    box.dataset.id = ""; // el contenido se queda mientras el panel se desliza hacia fuera
+    return;
+  }
+  const changed = box.dataset.id !== id;
+  box.dataset.id = id;
+  const isNew = state.taskId === "new";
+  const set = (patch) => { Object.assign(d, patch); renderDetail(); };
+  const chips = el("div", { class: "chips" }, ...state.users.map((u) =>
+    el("button", {
+      type: "button", class: "chip" + (d.assignees.includes(u.id) ? " on" : ""), textContent: u.name,
+      onclick: () => set({ assignees: d.assignees.includes(u.id) ? d.assignees.filter((x) => x !== u.id) : [...d.assignees, u.id] }),
+    })));
+  const desc = el("textarea", { rows: 1, value: d.description, placeholder: "Añade una descripción…", "aria-label": "Descripción" });
+  const fit = () => { desc.style.height = "auto"; desc.style.height = desc.scrollHeight + "px"; }; // crece con el texto
+  desc.addEventListener("input", () => { d.description = desc.value; fit(); });
+  box.replaceChildren(el("div", { class: "detail-inner" + (changed ? " swap" : "") },
+    el("input", { class: "ttl", value: d.title, "aria-label": "Título", oninput: (e) => { d.title = e.target.value; } }),
+    field("Descripción", desc),
+    field("Proyecto", select(state.projects.map((p) => [p.id, p.name]), d.project_id, (v) => set({ project_id: v }))),
+    field("Asignada a", chips),
+    field("Estado", segmented([["todo", STATE_LABEL.todo], ["doing", STATE_LABEL.doing], ["done", STATE_LABEL.done]], d.status, (v) => set({ status: v }))),
+    field("Prioridad", segmented([1, 2, 3, 4].map((n) => [n, "P" + n]), d.priority, (v) => set({ priority: v }))),
+    field("Fecha límite", dateField(d.due_date, (v) => set({ due_date: v }))),
+    el("div", { class: "actions" },
+      el("button", { type: "button", class: "primary", textContent: "Guardar cambios", onclick: saveDraft }),
+      el("button", { type: "button", textContent: "Cancelar", onclick: discardDraft })),
+    ...(isNew ? [] : [el("div", { class: "danger-zone" }, el("button", {
+      type: "button", class: "danger", textContent: "Eliminar tarea",
+      onclick: async () => {
+        if (!confirm("¿Eliminar esta tarea?")) return;
+        const taskId = state.taskId;
+        state.taskId = null; state.draft = null; state.draftBase = "";
+        await run(sb.from("tasks").delete().eq("id", taskId));
+        load();
+      },
+    }))])));
+  fit();
+  if (changed && matchMedia("(max-width: 1100px)").matches) box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if ($(".popover")) closeMenu();
+  else if (state.taskId) closePanel();
+});
+
+// Un clic en cualquier otro sitio cierra el panel. Se decide en la fase de captura, antes de que
+// los manejadores de cada elemento repinten la pantalla, y el cierre se aplica justo después.
+const KEEP_OPEN = "#detail, .popover, .row:not(.head), .bcard, .mchip, .cta, .madd";
+document.addEventListener("click", (e) => {
+  if (!state.taskId || e.target.closest(KEEP_OPEN)) return;
+  setTimeout(closePanel, 0);
+}, true);
+
+/* ---------- Arranque ---------- */
+sb.auth.getSession().then(({ data: { session } }) => { if (!session) showAuth(); });
+</script>
+</body>
+</html>

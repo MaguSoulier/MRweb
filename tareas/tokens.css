@@ -1,0 +1,92 @@
+/* Tokens de diseño — fuente: Figma "Sistema de diseño" (Colores 1:2 e interfaz 20:147)
+   Estilo brutalista: negro pleno como color primario, sin sombras ni efectos; el hover es un borde de 1px negro.
+   Usa siempre los tokens semánticos en los componentes; los primitivos solo se referencian aquí. */
+
+:root {
+  /* ---------- Primitivos: paleta cromática ---------- */
+  --color-white: #ffffff;
+  --color-gray-50: #f8f8f8;
+  --color-gray-75: #f5f5f5;
+  --color-gray-100: #ededed;
+  --color-gray-300: #bcbcbc;
+  --color-gray-400: #acacac;
+  --color-gray-500: #8b8b8b;
+  --color-gray-600: #6f6f6f;
+  --color-basic-800: #313131; /* Figma: Colors/Basic/800 */
+  --color-ink: #111111;
+  --color-black: #000000;
+
+  --color-green-500: #70ad00;
+  --color-yellow-500: #ffd014;
+  --color-red-500: #e22a11;
+  --color-orange-500: #f68300;
+  --color-orange-700: #d16f00; /* texto de la etiqueta "En proceso" */
+  --color-red-700: #c0240e; /* texto del botón "Eliminar tarea" */
+
+  /* ---------- Semánticos ---------- */
+  --color-surface: var(--color-white);
+  --color-surface-sidebar: var(--color-gray-50);
+  --color-surface-muted: var(--color-gray-100);
+  --color-chip: var(--color-gray-75);
+  --color-border: var(--color-gray-400);
+  --color-hover-border: var(--color-black); /* al pasar el cursor: borde de 1px negro */
+
+  --color-text: var(--color-basic-800);
+  --color-text-strong: var(--color-black);
+  --color-text-muted: var(--color-gray-600);
+  --color-text-faint: var(--color-gray-300);
+  --color-label: var(--color-gray-500);
+
+  /* Acción principal (CTA, botones primarios, selección activa): negro pleno */
+  --color-primary: var(--color-black);
+  --color-on-primary: var(--color-white);
+
+  --color-success: var(--color-green-500);
+  --color-warning: var(--color-yellow-500);
+  --color-danger: var(--color-red-500);
+  --color-danger-text: var(--color-red-700);
+
+  /* Estados de tarea: color del borde/punto y del texto de la etiqueta */
+  --color-status-todo: var(--color-gray-400);
+  --color-status-todo-text: var(--color-gray-500);
+  --color-status-doing: var(--color-orange-500);
+  --color-status-doing-text: var(--color-orange-700);
+  --color-status-done: var(--color-green-500);
+  --color-status-done-text: var(--color-green-500);
+  --color-status-late: var(--color-red-500);
+  --color-status-late-text: var(--color-red-500);
+
+  /* Flecha de los desplegables (el color va dentro del SVG: es --color-gray-500) */
+  --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%238b8b8b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+
+  /* ---------- Tipografía: solo Archivo y Chivo Mono ---------- */
+  --font-sans: "Archivo", sans-serif;
+  --font-mono: "Chivo Mono", monospace;
+
+  --font-size-display1: 64px; /* nombre de la persona/proyecto seleccionado */
+  --font-size-display3: 42px; /* Figma: Type/Size/Display3 */
+  --font-size-title: 32px;
+  --font-size-heading: 20px;
+  --font-size-body: 14px;
+  --font-size-small: 12px;
+  --font-size-caption: 11px;
+  --font-size-label: 10px;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* ---------- Movimiento ---------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 0.15s;
+  --dur-med: 0.3s;
+
+  /* ---------- Forma ---------- */
+  --radius-pill: 999px; /* cápsula: botón "+ Añadir tarea", pastillas y etiquetas de estado */
+  --radius-circle: 50%; /* números del calendario */
+  --radius-check: 3px; /* casilla de tarea completada: cuadrado redondeado */
+  --radius: 8px; /* único radio del sistema: botones, campos, pastillas, tarjetas, círculos */
+}

@@ -68,8 +68,9 @@
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
     <section id="cal"></section>
+    <ul class="navlist all" id="all-list"></ul>
     <section>
-      <h2><button type="button" class="h2btn" id="proj-open" aria-haspopup="true" title="Editar proyectos y prioridades">Proyectos</button><span class="h2actions"><button class="ghost" id="proj-edit" title="Editar proyectos y prioridades" aria-label="Editar proyectos y prioridades"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button><button class="ghost" id="proj-new" title="Nuevo proyecto" aria-label="Nuevo proyecto"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></span></h2>
+      <h2><button type="button" class="h2btn" id="proj-open" aria-haspopup="true" title="Editar proyectos y prioridades">Proyectos</button><span class="h2actions"><button class="ghost" id="proj-edit" title="Editar proyectos y prioridades" aria-label="Editar proyectos y prioridades"><svg class="ifill" viewBox="0 0 19.4355 19.4355" width="19.44" height="19.44" fill="currentColor" aria-hidden="true"><path d="M4.37291 15.0626H5.40542L12.9974 7.47056L11.9649 6.43805L4.37291 14.0301V15.0626ZM2.91524 16.5202V13.4227L14.0299 2.30799L17.1275 5.40553L6.01278 16.5202H2.91524ZM12.4721 6.96342L11.9649 6.43805L12.9974 7.47056L12.4721 6.96342Z"/></svg></button><button class="ghost" id="proj-new" title="Nuevo proyecto" aria-label="Nuevo proyecto"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></span></h2>
       <ul class="navlist" id="proj-list"></ul>
     </section>
     <section>
@@ -77,8 +78,9 @@
       <ul class="navlist" id="people-list"></ul>
     </section>
     <div class="me">
+      <span class="avatar" id="me-avatar" aria-hidden="true"></span><!-- la foto de perfil irá aquí; por ahora un círculo gris -->
       <span id="me"></span>
-      <button class="ghost" id="logout">Salir</button>
+      <button class="ghost" id="me-settings" title="Ajustes de la cuenta" aria-label="Ajustes de la cuenta" aria-haspopup="true"><svg class="ifill" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M9.69225 21.5L9.3115 18.4538C9.04367 18.3641 8.769 18.2385 8.4875 18.077C8.20617 17.9153 7.95458 17.7422 7.73275 17.5577L4.9115 18.75L2.604 14.75L5.04425 12.9058C5.02125 12.7571 5.00492 12.6077 4.99525 12.4578C4.98558 12.3078 4.98075 12.1583 4.98075 12.0095C4.98075 11.8673 4.98558 11.7228 4.99525 11.576C5.00492 11.4292 5.02125 11.2686 5.04425 11.0943L2.604 9.25L4.9115 5.26925L7.723 6.452C7.96417 6.261 8.22158 6.08633 8.49525 5.928C8.76892 5.76967 9.03783 5.64242 9.302 5.54625L9.69225 2.5H14.3077L14.6885 5.55575C14.9885 5.66475 15.2599 5.792 15.5027 5.9375C15.7457 6.083 15.991 6.2545 16.2385 6.452L19.0885 5.26925L21.396 9.25L18.9173 11.123C18.9531 11.2845 18.9727 11.4355 18.976 11.576C18.9792 11.7163 18.9807 11.8577 18.9807 12C18.9807 12.1358 18.9775 12.274 18.971 12.4145C18.9647 12.5548 18.9417 12.7154 18.902 12.8963L21.3615 14.75L19.0538 18.75L16.2385 17.548C15.991 17.7455 15.7384 17.9202 15.4807 18.072C15.2231 18.224 14.959 18.3481 14.6885 18.4443L14.3077 21.5H9.69225ZM11 20H12.9655L13.325 17.3212C13.8353 17.1879 14.3017 16.9985 14.724 16.753C15.1465 16.5073 15.5539 16.1916 15.9462 15.8057L18.4307 16.85L19.4155 15.15L17.2462 13.5155C17.3296 13.2565 17.3863 13.0026 17.4162 12.7537C17.4464 12.5051 17.4615 12.2538 17.4615 12C17.4615 11.7397 17.4464 11.4884 17.4162 11.2462C17.3863 11.0039 17.3296 10.7564 17.2462 10.5038L19.4345 8.85L18.45 7.15L15.9365 8.2095C15.6018 7.85183 15.2009 7.53583 14.7337 7.2615C14.2664 6.98717 13.7937 6.79292 13.3155 6.67875L13 4H11.0155L10.6845 6.66925C10.1743 6.78975 9.70325 6.97433 9.27125 7.223C8.83908 7.47183 8.42683 7.79233 8.0345 8.1845L5.55 7.15L4.5655 8.85L6.725 10.4595C6.64167 10.6968 6.58333 10.9437 6.55 11.2C6.51667 11.4563 6.5 11.7262 6.5 12.0095C6.5 12.2698 6.51667 12.525 6.55 12.775C6.58333 13.025 6.6385 13.2718 6.7155 13.5155L4.5655 15.15L5.55 16.85L8.025 15.8C8.4045 16.1897 8.81025 16.5089 9.24225 16.7578C9.67442 17.0064 10.152 17.1974 10.675 17.3307L11 20ZM12.0115 15C12.8435 15 13.5515 14.708 14.1355 14.124C14.7195 13.54 15.0115 12.832 15.0115 12C15.0115 11.168 14.7195 10.46 14.1355 9.876C13.5515 9.292 12.8435 9 12.0115 9C11.1692 9 10.4586 9.292 9.87975 9.876C9.30092 10.46 9.0115 11.168 9.0115 12C9.0115 12.832 9.30092 13.54 9.87975 14.124C10.4586 14.708 11.1692 15 12.0115 15Z"/></svg></button>
     </div>
   </aside>
 
@@ -87,12 +89,61 @@
     <div class="toolbar">
       <button class="pill" id="btn-view"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="pill" id="btn-sort"><span></span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <span class="spans" id="cal-span" role="group" aria-label="Escala del calendario" hidden>
+        <button type="button" class="pill" data-span="month">Mes</button>
+        <button type="button" class="pill" data-span="week">Semana</button>
+      </span>
       <button class="pill day-chip" id="day-chip" hidden></button>
     </div>
     <div id="content"></div>
   </main>
 
   <aside class="detail" id="detail"></aside>
+</div>
+
+<!-- Ajustes de la cuenta: pantalla completa -->
+<div id="settings" hidden>
+  <div class="set-wrap">
+    <button type="button" class="ghost set-back" id="set-back">← Volver</button>
+    <h1 class="title">Ajustes</h1>
+    <section class="set-block">
+      <h2>Foto de perfil</h2>
+      <div class="set-photo">
+        <span class="avatar big" id="set-avatar" aria-hidden="true"></span>
+        <div class="set-photo-actions">
+          <button type="button" id="set-photo-btn">Cambiar foto</button>
+          <button type="button" class="ghost" id="set-photo-del">Quitar foto</button>
+        </div>
+        <input type="file" id="set-photo-file" accept="image/*" hidden>
+      </div>
+      <p class="set-msg" id="set-photo-msg" role="status"></p>
+    </section>
+    <section class="set-block">
+      <h2>Apodo</h2>
+      <form class="set-row" id="set-nick-form">
+        <input id="set-nick" type="text" maxlength="24" required aria-label="Apodo" autocomplete="nickname">
+        <button type="submit" class="primary">Guardar</button>
+      </form>
+      <p class="set-msg" id="set-nick-msg" role="status"></p>
+    </section>
+    <section class="set-block">
+      <h2>Vista predeterminada</h2>
+      <div id="set-view"></div>
+      <p class="set-msg">Es la vista con la que se abre la web en este dispositivo.</p>
+    </section>
+    <section class="set-block">
+      <h2>Colores de las tareas</h2>
+      <div id="set-cmode"></div>
+      <p class="set-msg" id="set-cmode-hint"></p>
+      <div class="legend" id="set-legend"></div>
+      <p class="set-msg" id="set-color-msg" role="status"></p>
+    </section>
+    <section class="set-block">
+      <h2>Cuenta</h2>
+      <p class="set-email" id="set-email"></p>
+      <div><button type="button" id="set-logout">Cerrar sesión</button></div>
+    </section>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
@@ -121,15 +172,18 @@ const now = new Date();
 const state = {
   me: null, projects: [], tasks: [], users: [],
   focus: { type: "all" },           // { type: "user" | "project" | "all", id }
-  view: "list", sort: { key: "due", dir: 1 },
+  view: "list", defaultView: "list", sort: { key: "due", dir: 1 },
+  span: "month", week: null,         // escala del calendario y lunes (AAAA-MM-DD) de la semana que se ve
   day: null,                         // filtro por fecha límite (AAAA-MM-DD)
   month: { y: now.getFullYear(), m: now.getMonth() },
   taskId: null,                      // id de la tarea abierta, "new" si es nueva, null si el panel está cerrado
   draft: null, draftBase: "",        // borrador que se edita en el panel y su estado inicial (para saber si hay cambios)
 };
 try { Object.assign(state, JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")); } catch {}
+if (!VIEWS[state.defaultView]) state.defaultView = "list";
+state.view = state.defaultView; // la web siempre abre con la vista predeterminada (se cambia en Ajustes)
 const savePrefs = () => {
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ view: state.view, sort: state.sort })); } catch {}
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ defaultView: state.defaultView, sort: state.sort, span: state.span })); } catch {}
 };
 
 let dragging = false, reloadTimer = null, channel = null, lastContentKey = "", menuHandler = null;
@@ -147,10 +201,18 @@ function el(tag, props = {}, ...kids) {
   e.append(...kids);
   return e;
 }
+// Iconos del Figma (Sistema de diseño). Los dos de relleno son Material Symbols; todos toman el color del texto (currentColor)
+const CHEVRON = (d) => `<svg viewBox="0 0 19.1971 10.1314" width="19.2" height="10.13" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="${d}"/></svg>`;
+const ICON_PREV = CHEVRON("M11.6314 1.56569L8.13137 5.06569L11.6314 8.56569");
+const ICON_NEXT = CHEVRON("M7.56569 8.56569L11.0657 5.06569L7.56569 1.56569");
 const pad = (n) => String(n).padStart(2, "0");
 const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const todayISO = () => iso(new Date());
 const fmtDate = (s) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : "—");
+const mondayOf = (d) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+const parseISO = (s) => new Date(s + "T00:00");
+state.week = iso(mondayOf(new Date()));
+if (!["month", "week"].includes(state.span)) state.span = "month";
 
 const userById = (id) => state.users.find((u) => u.id === id);
 const userName = (id) => (userById(id) || {}).name || "?";
@@ -161,6 +223,50 @@ const projectRank = (p) => p.position ?? (p.priority ?? 2) * 1000; // «priority
 const byProjectRank = (a, b) => projectRank(a) - projectRank(b) || a.name.localeCompare(b.name);
 // Estado visible de una tarea: "late" es derivado (fecha pasada y sin completar)
 const tstate = (t) => (t.status === "done" ? "done" : t.due_date && t.due_date < todayISO() ? "late" : t.status);
+
+/* ---------- Colores de las tareas ---------- */
+// Cada persona elige con qué criterio se colorean las tareas (se guarda en su perfil: color_prefs.mode)
+const COLOR_MODES = { estado: "Estado", prioridad: "Prioridad", persona: "Persona", proyecto: "Proyecto", personalizado: "Personalizado" };
+const TAG_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8"]; // paleta de tokens.css (--color-tag-N)
+const TAG_NAMES = ["Violeta", "Azul", "Turquesa", "Amarillo", "Rosa", "Marrón", "Azul noche", "Negro"];
+const PRIO_COLORS = { 1: "7", 2: "2", 3: "3" }; // colores de prioridad si la persona no cambió ninguno
+const tagVar = (k) => `var(--color-tag-${k})`;
+const NEUTRAL = "var(--color-tag-none)";
+const colorPrefs = () => meProfile().color_prefs || {};
+const colorMode = () => (COLOR_MODES[colorPrefs().mode] ? colorPrefs().mode : "estado");
+// Color automático y estable para proyectos y personas que aún no tienen uno: su lugar en la lista ordenada por id
+const autoKey = (list, item) => TAG_KEYS[[...list].sort((a, b) => (a.id < b.id ? -1 : 1)).findIndex((x) => x.id === item.id) % TAG_KEYS.length];
+const userColorKey = (u) => u.color || autoKey(state.users, u);
+const projectColorKey = (p) => p.color || autoKey(state.projects, p);
+const stateColorKey = (s) => (colorPrefs().estado || {})[s] || null;
+const prioColorKey = (n) => (colorPrefs().prioridad || {})[n] || PRIO_COLORS[n] || "2";
+function colorOf(t, mode) {
+  if (mode === "estado") { const s = tstate(t), k = stateColorKey(s); return k ? tagVar(k) : `var(--color-status-${s})`; }
+  if (mode === "prioridad") return tagVar(prioColorKey(t.priority));
+  if (mode === "persona") { const u = userById(t.assignees[0]); return u ? tagVar(userColorKey(u)) : NEUTRAL; }
+  if (mode === "proyecto") { const p = projectById(t.project_id); return p ? tagVar(projectColorKey(p)) : NEUTRAL; }
+  return t.color ? tagVar(t.color) : NEUTRAL;
+}
+// Si con el modo elegido todas las tareas visibles saldrían del mismo color (p. ej. dentro de un proyecto, coloreando por proyecto), se usa Estado
+function effectiveMode(tasks) {
+  const m = colorMode();
+  if (m === "estado" || tasks.length < 2) return m;
+  return new Set(tasks.map((t) => colorOf(t, m))).size <= 1 ? "estado" : m;
+}
+let cmode = "estado"; // modo con el que se pinta la vista actual (lo fija renderContent)
+function tint(node, t) {
+  node.style.setProperty("--tc", colorOf(t, cmode));
+  node.classList.toggle("tinted", cmode !== "estado"); // en Estado ya se ve el color en el estado de la tarea
+  return node;
+}
+function swatchRow(value, onpick, noneLabel = "Sin color") {
+  return el("div", { class: "swatches", role: "radiogroup" },
+    el("button", { type: "button", class: "swatch none" + (!value ? " on" : ""), title: noneLabel, "aria-label": noneLabel, role: "radio", "aria-checked": String(!value), onclick: () => onpick(null) }),
+    ...TAG_KEYS.map((k, i) => el("button", {
+      type: "button", class: "swatch" + (value === k ? " on" : ""), title: TAG_NAMES[i], "aria-label": TAG_NAMES[i],
+      role: "radio", "aria-checked": String(value === k), style: `--sw:${tagVar(k)}`, onclick: () => onpick(k),
+    })));
+}
 
 async function run(q) {
   const { data, error } = await q;
@@ -176,7 +282,7 @@ function showAuthStep(step) {
   const first = $("#auth-" + step + " input");
   if (first) first.focus();
 }
-function showAuth() { $("#app").hidden = true; $("#auth").hidden = false; showAuthStep("welcome"); }
+function showAuth() { closeSettings(); $("#app").hidden = true; $("#auth").hidden = false; showAuthStep("welcome"); }
 $("#go-login").onclick = () => showAuthStep("login");
 $("#go-signup").onclick = () => showAuthStep("signup");
 for (const b of document.querySelectorAll("#auth [data-back]")) b.onclick = () => showAuthStep("welcome");
@@ -204,7 +310,6 @@ $("#auth-signup").onsubmit = async (e) => {
     ? "¡Alerta extranjero! Sólo integrantes de Media Resma permitidos"
     : error.message;
 };
-$("#logout").onclick = () => sb.auth.signOut();
 
 sb.auth.onAuthStateChange((_event, session) => {
   if (session && !state.me) start(session.user);
@@ -215,7 +320,8 @@ async function start(user) {
   state.me = user;
   state.focus = { type: "user", id: user.id };
   $("#auth").hidden = true; $("#app").hidden = false;
-  $("#me").textContent = user.email + (sb.isMock ? " · modo demo" : "");
+  $("#me").textContent = user.email;
+  $("#me").title = user.email + (sb.isMock ? " · modo demo" : "");
   await load();
   if (channel && sb.removeChannel) sb.removeChannel(channel);
   channel = sb.channel("cambios")
@@ -255,7 +361,9 @@ async function updateTask(id, patch) {
 // ---------- Borrador de la tarea abierta en el panel ----------
 // Los cambios se editan sobre una copia y no se guardan hasta pulsar «Guardar cambios».
 const DRAFT_FIELDS = ["title", "description", "project_id", "assignees", "status", "priority", "due_date"];
-const pickDraft = (t) => Object.fromEntries(DRAFT_FIELDS.map((k) => [k, Array.isArray(t[k]) ? [...t[k]] : t[k]]));
+// «color» solo viaja si la columna existe en la base de datos (se añade con colores.sql); así guardar no falla antes de ejecutarlo
+const hasColorColumn = () => state.tasks.length > 0 && "color" in state.tasks[0];
+const pickDraft = (t) => Object.fromEntries([...DRAFT_FIELDS, ...("color" in t ? ["color"] : [])].map((k) => [k, Array.isArray(t[k]) ? [...t[k]] : t[k]]));
 const isDirty = () => !!state.draft && JSON.stringify(state.draft) !== state.draftBase;
 // Si hay cambios sin guardar pide confirmación; devuelve false si se decide seguir editando
 const canDiscard = () => !isDirty() || confirm("¿Descartar los cambios sin guardar?");
@@ -273,6 +381,7 @@ function newTask(due = state.day) { // abre una tarea en blanco: no existe hasta
   if (!project_id) { alert("Crea primero un proyecto con «+» junto a Proyectos."); return; }
   openDraft({
     title: "Nueva tarea", description: "", project_id, status: "todo", priority: 2, due_date: due,
+    ...(hasColorColumn() ? { color: null } : {}),
     assignees: [f.type === "user" ? f.id : state.me.id],
   }, "new");
   const ttl = $("#detail .ttl");
@@ -349,9 +458,11 @@ function openPopover(anchor, node) {
   node.style.transformOrigin = below ? "top left" : "bottom left";
   setTimeout(() => { menuHandler = closeMenu; document.addEventListener("click", menuHandler); }, 0);
 }
-function openMenu(anchor, items) {
-  openPopover(anchor, el("div", { class: "menu" }, ...items.map(([label, fn, on]) =>
-    el("button", { textContent: (on ? "✓ " : "   ") + label, onclick: () => { closeMenu(); fn(); } }))));
+function openMenu(anchor, items, matchWidth = false) {
+  const menu = el("div", { class: "menu" }, ...items.map(([label, fn, on]) =>
+    el("button", { textContent: (on ? "✓ " : "   ") + label, onclick: () => { closeMenu(); fn(); } })));
+  if (matchWidth) menu.style.minWidth = anchor.offsetWidth + "px"; // el menú es al menos tan ancho como el campo que lo abre
+  openPopover(anchor, menu);
 }
 $("#btn-view").onclick = (e) => openMenu(e.currentTarget, Object.entries(VIEWS).map(([k, label]) =>
   [label, () => { state.view = k; savePrefs(); render(); }, state.view === k]));
@@ -360,6 +471,19 @@ $("#btn-sort").onclick = (e) => openMenu(e.currentTarget, Object.entries(SORTS).
   return [label + (on ? (state.sort.dir === 1 ? "  ↑" : "  ↓") : ""), () => sortBy(k), on];
 }));
 $("#day-chip").onclick = () => { state.day = null; render(); };
+// Al cambiar de escala se conserva el período que se estaba mirando
+$("#cal-span").onclick = (e) => {
+  const b = e.target.closest("[data-span]");
+  if (!b || b.dataset.span === state.span) return;
+  if (b.dataset.span === "week") {
+    const t = new Date(), inMonth = t.getFullYear() === state.month.y && t.getMonth() === state.month.m;
+    state.week = iso(mondayOf(inMonth ? t : new Date(state.month.y, state.month.m, 1)));
+  } else {
+    const d = parseISO(state.week); d.setDate(d.getDate() + 3); // el jueves decide a qué mes pertenece la semana
+    state.month = { y: d.getFullYear(), m: d.getMonth() };
+  }
+  state.span = b.dataset.span; savePrefs(); render();
+};
 
 /* ---------- Proyectos y personas ---------- */
 const GRIP_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
@@ -487,6 +611,8 @@ function render() {
   renderToolbar();
   renderContent();
   renderDetail();
+  paintAvatar($("#me-avatar"), meProfile().avatar_url);
+  if (!$("#settings").hidden) renderSettings();
 }
 function titleText() {
   const f = state.focus;
@@ -497,6 +623,8 @@ function renderToolbar() {
   chip.hidden = !state.day || state.view === "calendar";
   if (state.day) chip.textContent = `Fecha: ${fmtDate(state.day)} ✕`;
   $("#btn-sort").hidden = state.view === "calendar"; // en el calendario el orden lo da la fecha
+  $("#cal-span").hidden = state.view !== "calendar";
+  for (const b of $("#cal-span").children) b.classList.toggle("on", b.dataset.span === state.span);
   $("#btn-view span").textContent = VIEWS[state.view];
   $("#btn-sort span").textContent = "Ordenado por " + SORT_SHORT[state.sort.key];
 }
@@ -527,8 +655,8 @@ function calendarView(month, { onShift, onPick, selected = null, dotsFor = null,
   const head = el("div", { class: "cal-head" },
     el("span", {}, MONTHS[m] + " ", el("span", { class: "year", textContent: y })),
     el("span", { class: "cal-nav" },
-      el("button", { type: "button", textContent: "‹", title: "Mes anterior", onclick: () => onShift(-1) }),
-      el("button", { type: "button", textContent: "›", title: "Mes siguiente", onclick: () => onShift(1) })));
+      el("button", { type: "button", innerHTML: ICON_PREV, title: "Mes anterior", "aria-label": "Mes anterior", onclick: () => onShift(-1) }),
+      el("button", { type: "button", innerHTML: ICON_NEXT, title: "Mes siguiente", "aria-label": "Mes siguiente", onclick: () => onShift(1) })));
   return el("div", { class: "calbox" }, head, grid);
 }
 const shiftMonth = (month, n) => { const d = new Date(month.y, month.m + n, 1); return { y: d.getFullYear(), m: d.getMonth() }; };
@@ -571,14 +699,18 @@ function dateField(value, onchange) {
 
 function navItem(label, selected, onclick, dots) {
   return el("li", {}, el("button", { class: "navitem" + (selected ? " sel" : ""), onclick },
-    el("span", { textContent: label }), el("span", { class: "dots" }, ...dots)));
+    el("span", { class: "lbl", textContent: label, data: { text: label } }), el("span", { class: "dots" }, ...dots)));
 }
+// Una tarea completada solo deja su punto verde mientras su fecha límite no haya pasado; sin fecha o ya vencida, desaparece
+const showsNavDot = (t) => t.status !== "done" || (!!t.due_date && t.due_date >= todayISO());
 function renderNav() {
   const f = state.focus;
+  // Todas las tareas: quita el filtro de persona o proyecto (a diferencia del resto, volver a pulsarlo no hace nada)
+  $("#all-list").replaceChildren(navItem("Todas las tareas", f.type === "all", () => { state.focus = { type: "all" }; render(); }, []));
   // Proyecto: un punto por persona asignada, del color de su tarea más urgente en ese proyecto
   $("#proj-list").replaceChildren(...[...state.projects].sort(byProjectRank).map((p) => {
     const worst = new Map();
-    for (const t of state.tasks.filter((t) => t.project_id === p.id)) {
+    for (const t of state.tasks.filter((t) => t.project_id === p.id && showsNavDot(t))) {
       const s = tstate(t);
       for (const uid of t.assignees) if (!worst.has(uid) || STATE_RANK[s] < STATE_RANK[worst.get(uid)]) worst.set(uid, s);
     }
@@ -587,7 +719,7 @@ function renderNav() {
   }));
   // Persona: un punto por tarea asignada
   $("#people-list").replaceChildren(...state.users.map((u) => {
-    const mine = state.tasks.filter((t) => t.assignees.includes(u.id));
+    const mine = state.tasks.filter((t) => t.assignees.includes(u.id) && showsNavDot(t));
     const dots = mine.slice(0, 8).map((t) => dot(tstate(t), `${t.title} · ${STATE_LABEL[tstate(t)]}`));
     return navItem(u.name + (u.id === state.me.id ? " (yo)" : ""), f.type === "user" && f.id === u.id, () => setFocus("user", u.id), dots);
   }));
@@ -596,12 +728,13 @@ function renderNav() {
 function renderContent() {
   const content = $("#content");
   // Solo se anima la entrada cuando cambia lo que se está viendo, no en cada actualización
-  const key = [state.view, state.focus.type, state.focus.id, state.view === "calendar" ? state.month.y + "-" + state.month.m : state.day, state.sort.key, state.sort.dir].join("|");
+  const key = [state.view, state.focus.type, state.focus.id, state.view === "calendar" ? state.span + (state.span === "week" ? state.week : state.month.y + "-" + state.month.m) : state.day, state.sort.key, state.sort.dir].join("|");
   content.classList.toggle("enter", key !== lastContentKey);
   lastContentKey = key;
   const tasks = visibleTasks();
+  cmode = effectiveMode(state.view === "calendar" ? focusTasks() : tasks);
   content.replaceChildren(state.view === "board" ? renderBoard(tasks)
-    : state.view === "calendar" ? renderMonth(focusTasks()) // el calendario ignora el filtro por día
+    : state.view === "calendar" ? (state.span === "week" ? renderWeek : renderMonth)(focusTasks()) // el calendario ignora el filtro por día
     : renderList(tasks));
 }
 
@@ -619,25 +752,27 @@ function addRow() {
   return el("div", { class: "addrow" },
     el("button", { type: "button", class: "cta", textContent: "+ Añadir tarea", onclick: () => newTask() }));
 }
+// Dentro de un proyecto la columna de proyecto sería siempre la misma: se muestra quién tiene la tarea
+const assigneeNames = (t) => t.assignees.map(userName).join(", ") || "—";
 function taskRow(t) {
   const s = tstate(t), done = t.status === "done";
   const desc = (t.description || "").split("\n")[0];
-  return el("div", { class: "row" + (t.id === state.taskId ? " sel" : ""), onclick: () => selectTask(t.id) },
+  return tint(el("div", { class: "row" + (t.id === state.taskId ? " sel" : ""), onclick: () => selectTask(t.id) },
     el("div", { class: "cell-title" }, checkButton(t),
       el("div", { class: "tcol" },
         el("span", { class: "tt" + (done ? " done" : ""), textContent: t.title, title: t.title }),
         ...(desc && !done ? [el("span", { class: "desc", textContent: desc })] : []))),
-    el("span", { class: "light c-proj", textContent: projectName(t.project_id) }),
+    el("span", { class: "light c-proj", textContent: state.focus.type === "project" ? assigneeNames(t) : projectName(t.project_id) }),
     statePill(s),
     el("span", { class: "light mono" + (s === "late" ? " late-date" : ""), textContent: fmtDate(t.due_date) }),
-    el("span", { class: "light mono c-prio", textContent: prio(t.priority) }));
+    el("span", { class: "light mono c-prio", textContent: prio(t.priority) })), t);
 }
 // Pendientes arriba, botón de añadir en medio y completadas debajo
 function renderList(tasks) {
   const head = (label, key, cls = "") => el("span", { class: cls, data: { sort: key }, textContent: label + (state.sort.key === key ? (state.sort.dir === 1 ? " ↑" : " ↓") : ""), onclick: () => sortBy(key) });
   const list = el("div", { class: "list" },
     el("div", { class: "row head" },
-      head("Tarea", "title", "h-title"), head("Proyecto", "project", "c-proj"), head("Estado", "status"),
+      head("Tarea", "title", "h-title"), state.focus.type === "project" ? el("span", { class: "c-proj", textContent: "Asignada a" }) : head("Proyecto", "project", "c-proj"), head("Estado", "status"),
       head("Fecha límite", "due"), head("Prioridad", "priority", "c-prio")));
   list.append(...tasks.filter((t) => t.status !== "done").map(taskRow));
   if (!tasks.length) list.append(el("p", { class: "empty", textContent: "No hay tareas para esta selección." }));
@@ -665,15 +800,26 @@ function dropTarget(node, onDrop) {
     if (id) onDrop(id);
   });
 }
-function monthChip(t) {
-  const s = tstate(t);
+const ADD_ICON = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const addDayButton = (s) => el("button", { type: "button", class: "ghost madd", title: "Añadir una tarea este día", "aria-label": "Añadir una tarea este día", innerHTML: ADD_ICON, onclick: () => newTask(s) });
+// Caja de las tareas sin fecha: soltar una tarea aquí le quita la fecha
+function undatedBox(undated) {
+  const box = el("div", { class: "mundated" },
+    el("span", { class: "lbl", textContent: `Sin fecha (${undated.length})` }),
+    el("div", { class: "mchips" }, ...undated.map((t) => monthChip(t))));
+  dropTarget(box, (id) => updateTask(id, { due_date: null }));
+  return box;
+}
+// En la vista semanal la tarea muestra también su descripción (withDesc)
+function monthChip(t, withDesc = false) {
+  const s = tstate(t), desc = withDesc ? (t.description || "").trim() : "";
   const chip = el("div", {
-    class: "mchip" + (t.id === state.taskId ? " sel" : "") + (t.status === "done" ? " done" : ""),
+    class: "mchip" + (t.id === state.taskId ? " sel" : "") + (t.status === "done" ? " done" : "") + (desc ? " has-desc" : ""),
     data: { s }, draggable: true, title: `${t.title} · ${STATE_LABEL[s]} · ${projectName(t.project_id)}`,
     onclick: () => selectTask(t.id),
-  }, el("span", { textContent: t.title }));
+  }, el("span", { class: "ct", textContent: t.title }), ...(desc ? [el("span", { class: "cd", textContent: desc })] : []));
   dragSource(chip, t.id);
-  return chip;
+  return tint(chip, t);
 }
 function renderMonth(tasks) {
   const { y, m } = state.month;
@@ -687,8 +833,8 @@ function renderMonth(tasks) {
     el("h2", {}, MONTHS[m] + " ", el("span", { class: "year", textContent: y })),
     el("span", { class: "mcal-nav" },
       el("button", { type: "button", class: "pill", textContent: "Hoy", onclick: () => go({ y: new Date().getFullYear(), m: new Date().getMonth() }) }),
-      el("button", { type: "button", class: "ghost", textContent: "‹", title: "Mes anterior", onclick: () => go(shiftMonth(state.month, -1)) }),
-      el("button", { type: "button", class: "ghost", textContent: "›", title: "Mes siguiente", onclick: () => go(shiftMonth(state.month, 1)) })));
+      el("button", { type: "button", class: "ghost", innerHTML: ICON_PREV, title: "Mes anterior", "aria-label": "Mes anterior", onclick: () => go(shiftMonth(state.month, -1)) }),
+      el("button", { type: "button", class: "ghost", innerHTML: ICON_NEXT, title: "Mes siguiente", "aria-label": "Mes siguiente", onclick: () => go(shiftMonth(state.month, 1)) })));
   const grid = el("div", { class: "mgrid" }, ...WEEKDAYS.map((w) => el("span", { class: "mwd", textContent: w })));
   for (let i = 0; i < rows * 7; i++) {
     const d = new Date(y, m, 1 - off + i), s = iso(d), list = byDay[s] || [];
@@ -696,8 +842,8 @@ function renderMonth(tasks) {
     const cell = el("div", { class: "mday" + (d.getMonth() !== m ? " out" : "") + (s === td ? " today" : "") },
       el("div", { class: "mday-top" },
         el("span", { class: "mnum", textContent: d.getDate() }),
-        el("button", { type: "button", class: "ghost madd", textContent: "＋", title: "Añadir una tarea este día", onclick: () => newTask(s) })),
-      ...shown.map(monthChip));
+        addDayButton(s)),
+      ...shown.map((t) => monthChip(t)));
     if (list.length > shown.length) {
       cell.append(el("button", { type: "button", class: "ghost more", textContent: `+${list.length - shown.length} más`, onclick: () => { expandedDays.add(s); render(); } }));
     }
@@ -710,13 +856,7 @@ function renderMonth(tasks) {
     grid.append(cell);
   }
   const wrap = el("div", { class: "mcal" }, head, grid);
-  if (undated.length) {
-    const box = el("div", { class: "mundated" },
-      el("span", { class: "lbl", textContent: `Sin fecha (${undated.length})` }),
-      el("div", { class: "mchips" }, ...undated.map(monthChip)));
-    dropTarget(box, (id) => updateTask(id, { due_date: null }));
-    wrap.append(box);
-  }
+  if (undated.length) wrap.append(undatedBox(undated));
   return wrap;
 }
 
@@ -749,21 +889,67 @@ function boardCard(t) {
     e.dataTransfer.setData("text/plain", t.id); e.dataTransfer.effectAllowed = "move";
   });
   card.addEventListener("dragend", () => { dragging = false; card.classList.remove("dragging"); scheduleLoad(); });
-  return card;
+  return tint(card, t);
 }
 
 /* ---------- Panel de detalles ---------- */
+// Campo desplegable: abre el mismo menú que el selector de vista, no la lista nativa del navegador
 function select(options, value, onchange) {
-  const s = el("select", { onchange: (e) => onchange(e.target.value) });
-  for (const [v, label] of options) s.append(el("option", { value: v, textContent: label }));
-  s.value = value;
-  return s;
+  const cur = options.find(([v]) => v === value);
+  const b = el("button", {
+    type: "button", class: "selbtn", "aria-haspopup": "listbox",
+    onclick: () => openMenu(b, options.map(([v, label]) => [label, () => onchange(v), v === value]), true),
+  }, el("span", { textContent: cur ? cur[1] : "—" }));
+  b.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>');
+  return b;
 }
 function segmented(options, value, onchange) {
   return el("div", { class: "seg", role: "radiogroup" }, ...options.map(([v, label]) =>
     el("button", { type: "button", class: "seg-item" + (v === value ? " on" : ""), textContent: label, role: "radio", "aria-checked": String(v === value), onclick: () => onchange(v) })));
 }
 const field = (label, control) => el("div", { class: "field" }, el("span", { class: "lbl", textContent: label }), control);
+
+const MONTHS_SHORT = MONTHS.map((m) => m.slice(0, 3));
+// Como en el calendario mensual: «Noviembre 2026»; si la semana cruza de mes, «Oct – Nov 2026»
+function weekLabel(first, last) {
+  const a = first.getMonth(), b = last.getMonth();
+  if (a === b) return [MONTHS[a], last.getFullYear()];
+  if (first.getFullYear() === last.getFullYear()) return [`${MONTHS_SHORT[a]} – ${MONTHS_SHORT[b]}`, last.getFullYear()];
+  return [`${MONTHS_SHORT[a]} ${first.getFullYear()} – ${MONTHS_SHORT[b]}`, last.getFullYear()];
+}
+function renderWeek(tasks) {
+  const start = parseISO(state.week);
+  const days = Array.from({ length: 7 }, (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i));
+  const byDay = {}, undated = [];
+  for (const t of tasks) (t.due_date ? (byDay[t.due_date] ||= []) : undated).push(t);
+  const td = todayISO();
+  const go = (monday) => { state.week = iso(monday); render(); };
+  const shift = (n) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7 * n);
+  const [label, year] = weekLabel(days[0], days[6]);
+  const head = el("div", { class: "mcal-head" },
+    el("h2", {}, label + " ", el("span", { class: "year", textContent: year })),
+    el("span", { class: "mcal-nav" },
+      el("button", { type: "button", class: "pill", textContent: "Hoy", onclick: () => go(mondayOf(new Date())) }),
+      el("button", { type: "button", class: "ghost", innerHTML: ICON_PREV, title: "Semana anterior", "aria-label": "Semana anterior", onclick: () => go(shift(-1)) }),
+      el("button", { type: "button", class: "ghost", innerHTML: ICON_NEXT, title: "Semana siguiente", "aria-label": "Semana siguiente", onclick: () => go(shift(1)) })));
+  // Misma rejilla que el mes: fila de nombres de día y una celda alta por día (en el móvil los días se apilan y cada uno lleva su nombre)
+  const grid = el("div", { class: "wgrid" }, ...WEEKDAYS.map((w) => el("span", { class: "mwd", textContent: w })));
+  days.forEach((d, i) => {
+    const s = iso(d);
+    const col = el("div", { class: "wday" + (s === td ? " today" : "") },
+      el("div", { class: "mday-top" },
+        el("span", { class: "mnum", textContent: d.getDate() }),
+        el("span", { class: "wd-name", textContent: WEEKDAYS[i] }),
+        addDayButton(s)),
+      ...(byDay[s] || []).map((t) => monthChip(t, true)));
+    col.style.setProperty("--i", i);
+    dropTarget(col, (id) => updateTask(id, { due_date: s }));
+    grid.append(col);
+  });
+  const wrap = el("div", { class: "mcal" }, head, grid);
+  if (undated.length) wrap.append(undatedBox(undated));
+  return wrap;
+}
 
 // El panel se abre al añadir o pulsar una tarea y se cierra al guardar, cancelar, hacer clic fuera o con Esc
 function renderDetail() {
@@ -798,6 +984,7 @@ function renderDetail() {
     field("Estado", segmented([["todo", STATE_LABEL.todo], ["doing", STATE_LABEL.doing], ["done", STATE_LABEL.done]], d.status, (v) => set({ status: v }))),
     field("Prioridad", segmented([1, 2, 3].map((n) => [n, prio(n)]), d.priority, (v) => set({ priority: v }))),
     field("Fecha límite", dateField(d.due_date, (v) => set({ due_date: v }))),
+    ...(colorMode() === "personalizado" && "color" in d ? [field("Color", swatchRow(d.color, (v) => set({ color: v })))] : []),
     el("div", { class: "actions" },
       el("button", { type: "button", class: "primary", textContent: "Guardar cambios", onclick: saveDraft }),
       el("button", { type: "button", textContent: "Cancelar", onclick: discardDraft })),
@@ -818,6 +1005,7 @@ function renderDetail() {
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if ($(".popover")) closeMenu();
+  else if (!$("#settings").hidden) closeSettings();
   else if (state.taskId) closePanel();
   else setNav(false);
 });
@@ -829,6 +1017,128 @@ document.addEventListener("click", (e) => {
   if (!state.taskId || e.target.closest(KEEP_OPEN)) return;
   setTimeout(closePanel, 0);
 }, true);
+
+/* ---------- Ajustes de la cuenta ---------- */
+const meProfile = () => (state.me && userById(state.me.id)) || {};
+const paintAvatar = (node, url) => { node.style.backgroundImage = url ? `url("${url}")` : ""; };
+function setMsg(id, text, bad = false) { const n = $(id); n.textContent = text; n.classList.toggle("err", bad); }
+const saveError = (e) => /color/i.test(e.message || "") && /column|schema cache|function/i.test(e.message || "")
+  ? "Falta ejecutar colores.sql en Supabase (está explicado en el LEEME)."
+  : /avatar_url|column|schema cache|policy|row-level/i.test(e.message || "")
+    ? "Falta ejecutar perfil.sql en Supabase (está explicado en el LEEME)."
+    : "No se pudo guardar: " + (e.message || e);
+
+function openSettings() {
+  setNav(false); closeMenu();
+  for (const id of ["#set-photo-msg", "#set-nick-msg"]) setMsg(id, "");
+  $("#set-nick").value = meProfile().name || "";
+  renderSettings();
+  $("#settings").hidden = false;
+  document.body.classList.add("settings-open");
+  $("#set-back").focus();
+}
+function closeSettings() { $("#settings").hidden = true; document.body.classList.remove("settings-open"); }
+function renderSettings() {
+  const p = meProfile();
+  paintAvatar($("#set-avatar"), p.avatar_url);
+  $("#set-photo-del").hidden = !p.avatar_url;
+  $("#set-email").textContent = state.me.email + (sb.isMock ? " · modo demo" : "");
+  $("#set-view").replaceChildren(segmented([["list", VIEWS.list], ["calendar", VIEWS.calendar], ["board", VIEWS.board]], state.defaultView,
+    (v) => { state.defaultView = v; savePrefs(); renderSettings(); }));
+  renderColorSettings();
+}
+
+// Colores: modo elegido y, debajo, qué significa cada color (editable)
+const COLOR_HINTS = {
+  estado: "El color de cada tarea sale de su estado. Es tu preferencia: cada persona ve los suyos.",
+  prioridad: "El color de cada tarea sale de su prioridad. Es tu preferencia: cada persona ve los suyos.",
+  persona: "El color de cada tarea es el de la primera persona asignada. Los colores de las personas los ve todo el equipo.",
+  proyecto: "El color de cada tarea es el de su proyecto. Los colores de los proyectos los ve todo el equipo.",
+  personalizado: "Cada tarea lleva su propio color, que se elige en el panel de la tarea (campo «Color»). Sin elegir, se ve en gris.",
+};
+function legendRows() {
+  const m = colorMode(), cp = colorPrefs();
+  const savePrefsKey = (group, key, v) => {
+    const g = { ...(cp[group] || {}) };
+    if (v) g[key] = v; else delete g[key];
+    return saveColors(() => saveProfile({ color_prefs: { ...cp, [group]: g } }));
+  };
+  if (m === "estado") return ["todo", "doing", "done", "late"].map((s) => ({
+    label: STATE_LABEL[s], color: colorOf({ status: s === "late" ? "todo" : s, due_date: s === "late" ? "2000-01-01" : null }, "estado"),
+    key: stateColorKey(s), none: "Color original", save: (v) => savePrefsKey("estado", s, v) }));
+  if (m === "prioridad") return [1, 2, 3].map((n) => ({
+    label: PRIO[n] + (n === 1 ? "  (la más alta)" : ""), color: tagVar(prioColorKey(n)), key: prioColorKey(n), none: "Color original", save: (v) => savePrefsKey("prioridad", n, v) }));
+  if (m === "persona") return state.users.map((u) => ({
+    label: u.name + (u.id === state.me.id ? " (yo)" : ""), color: tagVar(userColorKey(u)), key: userColorKey(u), none: "Color automático",
+    save: (v) => saveColors(async () => { const { error } = await sb.rpc("set_profile_color", { target: u.id, c: v }); if (error) throw error; u.color = v; render(); load(); }) }));
+  if (m === "proyecto") return [...state.projects].sort(byProjectRank).map((p) => ({
+    label: p.name, color: tagVar(projectColorKey(p)), key: projectColorKey(p), none: "Color automático",
+    save: (v) => saveColors(async () => { const { error } = await sb.from("projects").update({ color: v }).eq("id", p.id); if (error) throw error; p.color = v; render(); load(); }) }));
+  return [];
+}
+async function saveColors(fn) {
+  setMsg("#set-color-msg", "");
+  try { await fn(); } catch (e) { setMsg("#set-color-msg", saveError(e), true); }
+}
+function renderColorSettings() {
+  const m = colorMode();
+  const seg = segmented(Object.entries(COLOR_MODES), m, (v) => saveColors(() => saveProfile({ color_prefs: { ...colorPrefs(), mode: v } })));
+  seg.classList.add("wrap");
+  $("#set-cmode").replaceChildren(seg);
+  $("#set-cmode-hint").textContent = COLOR_HINTS[m];
+  $("#set-legend").replaceChildren(...legendRows().map((r) => {
+    const sw = el("button", { type: "button", class: "swatch big", style: `--sw:${r.color}`, title: "Cambiar color", "aria-label": "Cambiar color de " + r.label, "aria-haspopup": "true" });
+    sw.onclick = () => openPopover(sw, el("div", { class: "pick" }, swatchRow(r.key, (v) => { closeMenu(); r.save(v); }, r.none)));
+    return el("div", { class: "legend-row" }, sw, el("span", { textContent: r.label }));
+  }));
+}
+async function saveProfile(patch) {
+  const { error } = await sb.from("profiles").update(patch).eq("id", state.me.id);
+  if (error) throw error;
+  Object.assign(meProfile(), patch); // se ve al instante; load() confirma con la base de datos
+  render(); load();
+}
+// La foto se recorta a un cuadrado de 256 px: pesa poco y se ve igual en todas partes
+async function squareJpeg(file, size = 256) {
+  const bmp = await createImageBitmap(file);
+  const s = Math.min(bmp.width, bmp.height), c = document.createElement("canvas");
+  c.width = c.height = size;
+  c.getContext("2d").drawImage(bmp, (bmp.width - s) / 2, (bmp.height - s) / 2, s, s, 0, 0, size, size);
+  return new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.85));
+}
+const blobToDataURL = (b) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+async function changePhoto(file) {
+  setMsg("#set-photo-msg", "");
+  try {
+    const blob = await squareJpeg(file);
+    let url;
+    if (sb.isMock) url = await blobToDataURL(blob);
+    else {
+      const path = `${state.me.id}/avatar.jpg`, bucket = sb.storage.from("avatars");
+      const up = await bucket.upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+      if (up.error) throw up.error;
+      url = bucket.getPublicUrl(path).data.publicUrl + "?v=" + Date.now(); // ?v evita que el navegador muestre la foto anterior
+    }
+    await saveProfile({ avatar_url: url });
+  } catch (e) { setMsg("#set-photo-msg", /imagen|decode|bitmap/i.test(e.message || "") ? "No se pudo leer esa imagen." : saveError(e), true); }
+}
+
+$("#me-settings").onclick = openSettings;
+$("#set-back").onclick = closeSettings;
+$("#set-photo-btn").onclick = () => $("#set-photo-file").click();
+$("#set-photo-file").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) changePhoto(f); };
+$("#set-photo-del").onclick = async () => {
+  setMsg("#set-photo-msg", "");
+  try { await saveProfile({ avatar_url: null }); } catch (e) { setMsg("#set-photo-msg", saveError(e), true); }
+};
+$("#set-nick-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const name = $("#set-nick").value.trim();
+  if (!name) return setMsg("#set-nick-msg", "Escribe un apodo.", true);
+  try { await saveProfile({ name }); setMsg("#set-nick-msg", "Apodo guardado."); }
+  catch (err) { setMsg("#set-nick-msg", saveError(err), true); }
+};
+$("#set-logout").onclick = () => { closeSettings(); sb.auth.signOut(); };
 
 /* ---------- Arranque ---------- */
 sb.auth.getSession().then(({ data: { session } }) => { if (!session) showAuth(); });

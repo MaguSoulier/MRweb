@@ -17,8 +17,8 @@ function createMockClient() {
   const save = () => localStorage.setItem(KEY, JSON.stringify(db));
 
   const DEFAULTS = {
-    projects: {},
-    tasks: { description: "", assignees: [], due_date: null, status: "todo", priority: 2 },
+    projects: { color: null },
+    tasks: { description: "", assignees: [], due_date: null, status: "todo", priority: 2, color: null },
   };
 
   function cascade() {
@@ -96,6 +96,14 @@ function createMockClient() {
       signInWithPassword: signIn,
       signUp: signIn,
       signOut: async () => { setSession(null); return { error: null }; },
+    },
+    // Funciones de la base de datos que usa la app (solo set_profile_color)
+    async rpc(name, args) {
+      if (name === "set_profile_color") {
+        const p = db.profiles.find((r) => r.id === args.target);
+        if (p) { p.color = args.c; save(); }
+      }
+      return { data: null, error: null };
     },
     channel() { const c = { on: () => c, subscribe: () => c }; return c; },
     removeChannel() {},

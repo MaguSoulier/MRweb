@@ -8,13 +8,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .light { font-weight: var(--font-weight-light); }
 svg { flex: none; }
 
+/* Barra de desplazamiento igual a la de la web principal: fina, pista negra y barra blanca, sin redondeo */
+* { scrollbar-width: thin; scrollbar-color: var(--color-white) var(--color-black); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-black); }
+::-webkit-scrollbar-thumb { background: var(--color-white); border-radius: 0; }
+
 /* Sin sombras ni degradados. Al pasar el cursor, cada elemento interactivo gana un borde de 1px negro.
    El movimiento se limita a fundidos y desplazamientos cortos: nada se eleva ni se escala. */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-button, input, select, textarea, .row, .navitem, .day .n, .bcard, .mchip, .mday, .chip, .seg-item, .check {
-  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast), outline-color var(--dur-fast);
+button, input, select, textarea, .row, .navitem, .day .n, .bcard, .mchip, .mday, .wday, .chip, .seg-item, .check {
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast), outline-color var(--dur-fast), font-weight var(--dur-fast);
 }
+svg, .navitem .lbl, .day .n, .tt { transition: stroke-width var(--dur-fast), font-weight var(--dur-fast); }
 
 /* ---------- Botones ---------- */
 button { cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius); padding: 6px 12px; }
@@ -22,7 +29,12 @@ button:hover { border-color: var(--color-hover-border); }
 button.primary, .cta { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); font-weight: var(--font-weight-semibold); }
 button.primary:hover, .cta:hover { outline: 1px solid var(--color-black); outline-offset: 2px; } /* el borde ya es negro: se ve como un aro */
 button.ghost { border: 1px solid transparent; background: none; padding: 2px 6px; color: var(--color-text-muted); font-size: var(--font-size-small); }
-button.ghost:hover { border-color: var(--color-hover-border); }
+/* Hover sin reborde en iconos y elementos de listas: cambia el peso de la tipografía o del trazo del icono */
+button.ghost:hover, .menu-btn:hover { color: var(--color-black); font-weight: var(--font-weight-bold); border-color: transparent; }
+button.ghost:hover svg, .menu-btn:hover svg, .grip:hover svg { stroke-width: 2.4; }
+/* Iconos de relleno (editar, ajustes): no tienen trazo; en hover se les añade uno fino para que ganen peso */
+svg.ifill { stroke: currentColor; stroke-width: 0; }
+button.ghost:hover svg.ifill { stroke-width: .8; }
 
 /* ---------- Campos ---------- */
 input, select, textarea { width: 100%; border: 1px solid var(--color-basic-800); border-radius: var(--radius); padding: 10px 13px; background: var(--color-surface); }
@@ -67,14 +79,16 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
 .detail-inner { width: var(--detail-w); padding: 36px 32px 32px; display: flex; flex-direction: column; gap: 12px; }
 .detail-inner.swap, .title.swap { animation: rise var(--dur-med) var(--ease-out) both; }
 /* Entrada escalonada al cambiar de vista, persona, proyecto o mes */
-.enter .row:not(.head), .enter .bcol, .enter .mday, .enter .empty, .enter .addrow { animation: rise var(--dur-med) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 28ms); }
+.enter .row:not(.head), .enter .bcol, .enter .mday, .enter .wday, .enter .empty, .enter .addrow { animation: rise var(--dur-med) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 28ms); }
 
 /* ---------- Calendario (barra lateral y selector de fecha) ---------- */
 .cal-head { display: flex; align-items: baseline; justify-content: space-between; font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); color: var(--color-ink); }
 .cal-head .year { color: var(--color-text-faint); }
-.cal-nav { display: flex; }
-.cal-nav button { border: 1px solid transparent; background: none; padding: 0 6px; color: var(--color-text-muted); font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); line-height: 20px; }
-.cal-nav button:hover { border-color: var(--color-hover-border); }
+/* Flechas del Figma: dos chevrones de 19×10 px pegados; al pasar el cursor el trazo se engrosa */
+.cal-nav { display: flex; align-items: center; height: 22px; }
+.cal-nav button, .mcal-nav .ghost { display: flex; align-items: center; justify-content: center; width: 19.2px; height: 22px; padding: 0; border: 1px solid transparent; background: none; color: var(--color-text-muted); }
+.cal-nav button:hover { color: var(--color-black); border-color: transparent; }
+.cal-nav button:hover svg { stroke-width: 2.4; }
 .cal { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 14px; }
 .cal .wd { font-size: var(--font-size-label); color: var(--color-label); text-align: center; padding: 4px 0 6px; }
 .cal .wd.today { color: var(--color-text-strong); font-weight: var(--font-weight-bold); }
@@ -82,7 +96,7 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
   font-family: var(--font-mono); font-weight: var(--font-weight-semibold); color: var(--color-ink); }
 .day:hover { border: none; }
 .day .n { width: 30px; height: 30px; border: 1px solid transparent; border-radius: var(--radius-circle); display: flex; align-items: center; justify-content: center; }
-.day:hover .n { border-color: var(--color-hover-border); }
+.day:hover .n { font-weight: var(--font-weight-extrabold); }
 .day.out { color: var(--color-text-faint); }
 .day.today .n { background: var(--color-primary); color: var(--color-on-primary); }
 .day.sel .n { border-color: var(--color-black); }
@@ -107,12 +121,23 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
 .h2actions button { visibility: hidden; }  /* el lápiz y el «+» solo aparecen al pasar el cursor por el encabezado */
 .side h2:hover .h2actions button, .h2actions button:focus-visible { visibility: visible; }
 .navlist { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.navlist.all { margin-top: 0; }
 .navitem { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; border: 1px solid transparent; background: none; padding: 5px 8px; border-radius: var(--radius); color: var(--color-text); }
-.navitem:hover { border-color: var(--color-hover-border); }
+.navitem:hover:not(.sel) { border-color: transparent; }
+.navitem:hover .lbl { font-weight: var(--font-weight-bold); color: var(--color-text-strong); }
+/* Reserva el ancho de la versión en negrita para que los puntos de al lado no se muevan al pasar el cursor */
+.navitem .lbl::after { content: attr(data-text); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: var(--font-weight-bold); }
 .navitem.sel { font-weight: var(--font-weight-bold); color: var(--color-text-strong); border-color: var(--color-basic-800); border-radius: var(--radius); padding-block: 6px; }
 .navitem .dots { margin-left: 2px; }
-.me { margin-top: auto; padding-top: 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
-.me #me { flex-basis: 100%; font-family: var(--font-mono); font-size: var(--font-size-caption); color: var(--color-text-muted); overflow-wrap: anywhere; margin-bottom: 4px; }
+/* Pie: foto de perfil (por ahora un círculo gris), correo y ajustes de la cuenta */
+.me { margin-top: auto; padding-top: 39px; display: flex; align-items: center; gap: 10px; }
+.avatar { width: 38px; height: 38px; border-radius: var(--radius-circle); background: var(--color-avatar) center / cover no-repeat; flex: none; }
+.avatar.big { width: 96px; height: 96px; }
+/* La barra lateral se desplaza sin mostrar barra */
+.side { scrollbar-width: none; }
+.side::-webkit-scrollbar { display: none; }
+.me #me { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: var(--font-size-caption); color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.me .ghost { flex: none; display: flex; padding: 0; color: var(--color-ink); }
 
 /* ---------- Zona principal ---------- */
 .title { margin: 0; font-size: clamp(36px, 5vw, var(--font-size-display1)); font-weight: var(--font-weight-extrabold); color: var(--color-text-strong); line-height: 1.1; overflow-wrap: anywhere; }
@@ -124,7 +149,8 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
 .list { display: flex; flex-direction: column; gap: 5px; }
 .row { display: grid; grid-template-columns: minmax(160px, 2.2fr) minmax(80px, 1fr) 110px 100px 70px; align-items: center; gap: 12px; padding: 9px 10px; border: 1px solid transparent; border-radius: var(--radius); cursor: pointer; }
 .row > * { min-width: 0; }
-.row:not(.head):hover, .row.sel { border-color: var(--color-hover-border); }
+.row.sel { border-color: var(--color-hover-border); }
+.row:not(.head):hover .tt { font-weight: var(--font-weight-bold); }
 .row.head { cursor: default; font-size: var(--font-size-label); color: var(--color-label); padding-block: 8px 4px; }
 .row.head span[data-sort] { cursor: pointer; }
 .row.head span[data-sort]:hover { color: var(--color-black); }
@@ -153,6 +179,10 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
 .bcards { display: flex; flex-direction: column; gap: 8px; }
 .bcard { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px; cursor: grab; }
 .bcard:hover, .bcard.sel { border-color: var(--color-hover-border); }
+/* Color elegido (modos distintos de Estado): barra a la izquierda de filas y tarjetas, como en los chips del calendario */
+.bcard.tinted { border-left: 3px solid var(--tc); }
+.bcard.tinted:hover, .bcard.tinted.sel { border-left-color: var(--tc); }
+.row.tinted:not(.head) { box-shadow: inset 3px 0 0 var(--tc); }
 .bcard.dragging { opacity: .4; }
 .bcard .tt { white-space: normal; }
 .bcard .meta { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: var(--font-size-caption); color: var(--color-label); }
@@ -162,30 +192,44 @@ main { padding: 56px 56px 40px 60px; display: flex; flex-direction: column; gap:
 .mcal-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
 .mcal-head h2 { margin: 0; font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); }
 .mcal-head .year { color: var(--color-text-faint); }
-.mcal-nav { display: flex; align-items: center; gap: 4px; }
-.mcal-nav .ghost { font-size: var(--font-size-heading); line-height: 20px; padding: 0 6px; }
-.mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--color-border); border-left: 1px solid var(--color-border); }
-.mwd { font-size: var(--font-size-label); color: var(--color-label); padding: 6px 8px; border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
-.mday { min-height: 116px; padding: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 0; border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
-.mday:hover { outline: 1px solid var(--color-hover-border); outline-offset: -1px; }
+.mcal-nav { display: flex; align-items: center; }
+.mcal-nav .pill { margin-right: 4px; }
+/* Rejilla (mes y semana): contorno redondeado y líneas de 1 px entre celdas; cada celda lleva su propio fondo */
+.mgrid, .wgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+.mwd { background: var(--color-surface); font-size: var(--font-size-label); color: var(--color-label); padding: 7px 9px; }
+.mday, .wday { background: var(--color-surface); min-height: 116px; padding: 6px 7px 6px 6px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mday:hover, .wday:hover { outline: 1px solid var(--color-hover-border); outline-offset: -1px; }
 .mday.out { background: var(--color-surface-sidebar); }
 .mday.out .mnum { color: var(--color-text-faint); }
-.mday.over { outline: 1px dashed var(--color-black); outline-offset: -1px; }
-.mday-top { display: flex; justify-content: space-between; align-items: center; min-height: 24px; }
+.mday.over, .wday.over { outline: 1px dashed var(--color-black); outline-offset: -1px; }
+.mday-top { display: flex; justify-content: space-between; align-items: center; min-height: 28px; }
 .mnum { font-family: var(--font-mono); font-weight: var(--font-weight-semibold); width: 24px; height: 24px; border-radius: var(--radius-circle); display: flex; align-items: center; justify-content: center; }
-.mday.today .mnum { background: var(--color-primary); color: var(--color-on-primary); }
-.madd { visibility: hidden; font-size: var(--font-size-body); padding: 0 6px; }
-.mday:hover .madd, .madd:focus-visible { visibility: visible; }
-.mchip { display: block; padding: 2px 6px; border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); border-left: 3px solid var(--c); font-size: var(--font-size-caption); cursor: grab; }
+.mday.today .mnum, .wday.today .mnum { background: var(--color-primary); color: var(--color-on-primary); }
+/* Botón de añadir: caja fija de 32 px con un icono de 24 px; al pasar el cursor el cambio es instantáneo y nada se mueve */
+.madd { visibility: hidden; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: -2px; padding: 0; color: var(--color-text-muted); }
+.madd svg { transition: none; }
+.mday:hover .madd, .wday:hover .madd, .madd:focus-visible { visibility: visible; }
+.mchip { display: block; padding: 3px 7px 3px 9px; border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); border-left: 3px solid var(--tc, var(--c)); font-size: var(--font-size-caption); cursor: grab; }
 .mchip span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mchip:hover, .mchip.sel { outline: 1px solid var(--color-black); outline-offset: 0; }
 .mchip.done span { text-decoration: line-through; color: var(--color-label); }
 .mchip.dragging { opacity: .4; }
 .mday .more { align-self: flex-start; padding: 0 4px; }
-.mundated { margin-top: 16px; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius); }
+/* Escala del calendario (Mes / Semana) */
+.spans { display: inline-flex; gap: 4px; }
+.pill.on { border-color: var(--color-black); font-weight: var(--font-weight-bold); }
+
+/* Vista semanal: la misma rejilla que el mes con celdas más altas; las tareas muestran su descripción */
+.wday { min-height: 319px; }
+.wd-name { display: none; font-size: var(--font-size-label); color: var(--color-label); }
+.mchip.has-desc { display: flex; flex-direction: column; gap: 4px; padding-block: 5px; }
+.mchip.has-desc .ct { font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); }
+.mchip.has-desc .cd { font-size: var(--font-size-label); color: var(--color-label); white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.mchip.has-desc.done .cd { text-decoration: line-through; }
+.mundated { margin-top: 12px; padding: 18px 11px 11px; border: 1px solid var(--color-border); border-radius: var(--radius); }
 .mundated.over { border: 1px dashed var(--color-black); }
-.mundated .lbl { font-size: var(--font-size-label); color: var(--color-label); }
-.mchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.mundated .lbl { font-size: var(--font-size-label); color: var(--color-ink); }
+.mchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
 .mchips .mchip { max-width: 220px; }
 
 /* ---------- Panel de detalles ---------- */
@@ -214,10 +258,43 @@ button.danger:hover { border-color: var(--color-hover-border); }
 .danger-zone { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-border); }
 
 /* ---------- Menús y selector de fecha ---------- */
-.popover { animation: pop var(--dur-fast) var(--ease-out) both; position: absolute; z-index: 80; background: var(--color-surface); border: 1px solid var(--color-black); border-radius: var(--radius); }
-.menu { padding: 4px; min-width: 170px; display: flex; flex-direction: column; }
+.popover { animation: pop var(--dur-fast) var(--ease-out) both; position: absolute; z-index: 100; background: var(--color-surface); border: 1px solid var(--color-black); border-radius: var(--radius); }
+.menu { padding: 4px; min-width: 170px; max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; }
+/* Campo desplegable (p. ej. Proyecto): se ve como el campo de texto y abre el mismo menú que el selector de vista */
+.selbtn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; padding: 10px 13px; border-color: var(--color-basic-800); }
+.selbtn svg { color: var(--color-label); flex: none; }
+
+/* ---------- Ajustes de la cuenta (pantalla completa) ---------- */
+#settings { position: fixed; inset: 0; z-index: 90; overflow-y: auto; background: var(--color-surface); animation: rise var(--dur-med) var(--ease-out) both; }
+body.settings-open { overflow: hidden; }
+.set-wrap { max-width: 640px; margin: 0 auto; padding: 24px 24px 64px; display: flex; flex-direction: column; gap: 28px; }
+.set-back { align-self: flex-start; margin-left: -6px; font-size: var(--font-size-body); color: var(--color-ink); }
+.set-block { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; border-top: 1px solid var(--color-border); }
+.set-block h2 { margin: 0; font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); color: var(--color-ink); }
+.set-photo { display: flex; align-items: center; gap: 20px; }
+.set-photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.set-photo-actions button:not(.ghost) { border-color: var(--color-basic-800); border-radius: var(--radius-pill); padding: 8px 18px; }
+.set-row { display: flex; gap: 8px; }
+.set-row input { flex: 1; min-width: 0; }
+.set-row button { border-radius: var(--radius-pill); padding: 8px 20px; }
+.set-msg { margin: 0; min-height: 1em; font-size: var(--font-size-small); color: var(--color-label); }
+.set-msg.err { color: var(--color-danger); }
+/* Muestras de color (panel de la tarea y ajustes). El hover es instantáneo y no mueve nada */
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.swatch { width: 24px; height: 24px; padding: 0; border-radius: var(--radius-circle); border: 1px solid transparent; background: var(--sw); flex: none; transition: none; }
+.swatch:hover { border-color: transparent; outline: 1px solid var(--color-black); outline-offset: 2px; }
+.swatch.on { outline: 2px solid var(--color-black); outline-offset: 2px; }
+.swatch.none { background: linear-gradient(to top right, transparent calc(50% - 1px), var(--color-gray-500) 50%, transparent calc(50% + 1px)), var(--color-surface); border-color: var(--color-border); }
+.swatch.big { width: 28px; height: 28px; }
+.pick { padding: 12px; max-width: 280px; }
+.seg.wrap { flex-wrap: wrap; }
+.seg.wrap .seg-item { flex: 1 0 auto; padding-inline: 12px; }
+.legend { display: flex; flex-direction: column; gap: 10px; }
+.legend-row { display: flex; align-items: center; gap: 12px; font-size: var(--font-size-body); }
+.set-email { margin: 0; font-family: var(--font-mono); font-size: var(--font-size-caption); overflow-wrap: anywhere; }
+#set-logout { border-color: var(--color-basic-800); border-radius: var(--radius-pill); padding: 8px 18px; }
 .menu button { border: 1px solid transparent; text-align: left; white-space: pre; }
-.menu button:hover { border-color: var(--color-hover-border); }
+.menu button:hover { font-weight: var(--font-weight-bold); border-color: transparent; }
 .datepop { padding: 16px; width: 300px; }
 .datepop .cal { margin-top: 10px; }
 .datepop-foot { display: flex; justify-content: space-between; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--color-border); }
@@ -229,7 +306,7 @@ button.danger:hover { border-color: var(--color-hover-border); }
 .projrow.drop-after { border-bottom-color: var(--color-black); }
 .projrow input { padding: 7px 10px; }
 .grip { display: flex; justify-content: center; padding: 4px 0; border: 1px solid transparent; background: none; color: var(--color-label); cursor: grab; }
-.grip:hover { border-color: var(--color-hover-border); color: var(--color-black); }
+.grip:hover { color: var(--color-black); border-color: transparent; }
 .rank { font-family: var(--font-mono); font-size: var(--font-size-caption); color: var(--color-label); text-align: center; }
 .projnew { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--color-border); }
 .projnew .lbl { font-size: var(--font-size-label); color: var(--color-label); }
@@ -284,10 +361,20 @@ button.danger:hover { border-color: var(--color-hover-border); }
   .mwd { padding: 6px 0; text-align: center; }
   .mday { min-height: 58px; padding: 4px; flex-direction: row; flex-wrap: wrap; align-content: flex-start; gap: 3px; cursor: pointer; }
   .mday-top { width: 100%; }
-  .mday .mchip { width: 8px; height: 8px; padding: 0; border: none; border-radius: var(--radius-circle); background: var(--c); font-size: 0; pointer-events: none; }
+  .mday .mchip { width: 8px; height: 8px; padding: 0; border: none; border-radius: var(--radius-circle); background: var(--tc, var(--c)); font-size: 0; pointer-events: none; }
   .mday .mchip span { display: none; }
   .mday .more { padding: 0; font-size: 10px; line-height: 8px; }
-  .madd { display: none; }
+  .mday .madd { display: none; }
+  /* Semana: los días se apilan en una columna y cada uno lleva su nombre junto al número */
+  .wgrid { grid-template-columns: minmax(0, 1fr); }
+  .wgrid .mwd { display: none; }
+  .wday { min-height: 0; padding: 6px 8px 10px; }
+  .wday .mday-top { justify-content: flex-start; gap: 8px; }
+  .wd-name { display: inline; }
+  .wday .madd { visibility: visible; margin-left: auto; }
+  .cal-nav { height: auto; }
+  .cal-nav button, .mcal-nav .ghost { width: 32px; height: 36px; }
+  .spans { display: contents; }
 
   /* Objetivos táctiles más grandes */
   .navitem { padding: 10px 8px; }

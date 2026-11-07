@@ -9,6 +9,7 @@
   --color-gray-75: #f5f5f5;
   --color-gray-100: #ededed;
   --color-gray-300: #bcbcbc;
+  --color-gray-350: #a4a4a4;
   --color-gray-400: #acacac;
   --color-gray-500: #8b8b8b;
   --color-gray-600: #6f6f6f;
@@ -27,6 +28,7 @@
   /* ---------- Semánticos ---------- */
   --color-surface: var(--color-white);
   --color-surface-sidebar: var(--color-gray-50);
+  --color-avatar: var(--color-gray-350); /* círculo de la foto de perfil mientras no hay foto */
   --color-surface-muted: var(--color-gray-100);
   --color-chip: var(--color-gray-75);
   --color-border: var(--color-gray-400);
@@ -49,6 +51,17 @@
   --color-danger-text: var(--color-red-700);
 
   /* Estados de tarea: color del borde/punto y del texto de la etiqueta */
+  /* Paleta para colorear tareas por prioridad, persona, proyecto o a mano. Sin rojo, naranja ni verde: esos son de los estados.
+     (Propuesta: falta pasarla al Figma.) */
+  --color-tag-1: var(--color-violet-300); /* violeta */
+  --color-tag-2: #5b8def; /* azul */
+  --color-tag-3: #2bb8a6; /* turquesa */
+  --color-tag-4: #e7c13a; /* amarillo */
+  --color-tag-5: #f08fc0; /* rosa */
+  --color-tag-6: #a1744a; /* marrón */
+  --color-tag-7: #2b3a67; /* azul noche */
+  --color-tag-8: var(--color-ink); /* negro */
+  --color-tag-none: var(--color-gray-400); /* tarea sin color */
   --color-status-todo: var(--color-gray-400);
   --color-status-todo-text: var(--color-gray-500);
   --color-status-doing: var(--color-orange-500);

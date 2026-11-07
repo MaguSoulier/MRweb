@@ -26,6 +26,22 @@ prueba, borra los datos del sitio en el navegador. Al poner las claves reales de
 Esta carpeta vive en el repositorio y GitHub Pages la publica en https://mediaresma.uy/tareas/ (no hay enlaces
 hacia ella desde el resto del sitio y lleva `noindex`, así que solo se entra escribiendo la dirección).
 
+## Ajustes de la cuenta (apodo y foto)
+
+El engranaje de la barra lateral abre una pantalla completa con: foto de perfil, apodo, vista predeterminada
+(solo en ese dispositivo) y cerrar sesión. Para que el apodo y la foto se guarden hay que ejecutar **una vez**
+`perfil.sql` en Supabase (SQL Editor > New query > pegar > Run): añade la columna `avatar_url`, deja que cada
+persona edite solo su propio perfil y crea el espacio `avatars` para las fotos.
+
+## Colores de las tareas
+
+En Ajustes > "Colores de las tareas" cada persona elige con qué criterio se colorean: **Estado** (por defecto),
+**Prioridad**, **Persona**, **Proyecto** o **Personalizado** (cada tarea lleva su color, que se elige en el panel
+de la tarea). Debajo se ve qué significa cada color y se puede cambiar. Si con el modo elegido todas las tareas que se
+ven saldrían del mismo color (p. ej. dentro de un proyecto, coloreando por proyecto), esa vista usa Estado.
+El modo y los colores de estado/prioridad son personales; los colores de personas y proyectos los ve todo el equipo.
+Hay que ejecutar **una vez** `colores.sql` en Supabase (después de `acceso.sql` y `perfil.sql`).
+
 ## Seguridad
 
 Cualquiera con el enlace puede crear una cuenta y ver las tareas. Cuando los 5 se hayan registrado, desactiva

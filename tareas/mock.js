@@ -40,9 +40,10 @@ function createMockClient() {
       }
       const match = (r) => !filter || r[filter[0]] === filter[1];
       if (op === "update") {
-        rows.filter(match).forEach((r) => Object.assign(r, payload));
+        const hit = rows.filter(match);
+        hit.forEach((r) => Object.assign(r, payload));
         save();
-        return { data: null, error: null };
+        return { data: returning ? structuredClone(hit) : null, error: null };
       }
       if (op === "delete") {
         db[table] = rows.filter((r) => !match(r));

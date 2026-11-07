@@ -40,7 +40,9 @@ En Ajustes > "Colores de las tareas" cada persona elige con qué criterio se col
 de la tarea). Debajo se ve qué significa cada color y se puede cambiar. Si con el modo elegido todas las tareas que se
 ven saldrían del mismo color (p. ej. dentro de un proyecto, coloreando por proyecto), esa vista usa Estado.
 El modo y los colores de estado/prioridad son personales; los colores de personas y proyectos los ve todo el equipo.
-Hay que ejecutar **una vez** `colores.sql` en Supabase (después de `acceso.sql` y `perfil.sql`).
+Cada color se elige con un selector libre (rueda de color) o escribiendo su código HEX.
+Hay que ejecutar **una vez** `colores.sql` en Supabase (después de `acceso.sql` y `perfil.sql`) y luego `colores_libre.sql`,
+que permite guardar cualquier color.
 
 ## Seguridad
 

@@ -105,7 +105,11 @@
 <div id="settings" hidden>
   <div class="set-wrap">
     <button type="button" class="ghost set-back" id="set-back">← Volver</button>
-    <h1 class="title">Ajustes</h1>
+    <div class="set-head">
+      <h1 class="title">Ajustes</h1>
+      <button type="button" class="primary" id="set-save" disabled>Guardar cambios</button>
+      <span class="set-msg" id="set-save-msg" role="status"></span>
+    </div>
     <section class="set-block">
       <h2>Foto de perfil</h2>
       <div class="set-photo">
@@ -116,33 +120,41 @@
         </div>
         <input type="file" id="set-photo-file" accept="image/*" hidden>
       </div>
-      <p class="set-msg" id="set-photo-msg" role="status"></p>
     </section>
     <section class="set-block">
       <h2>Apodo</h2>
       <form class="set-row" id="set-nick-form">
-        <input id="set-nick" type="text" maxlength="24" required aria-label="Apodo" autocomplete="nickname">
-        <button type="submit" class="primary">Guardar</button>
+        <input id="set-nick" type="text" maxlength="24" aria-label="Apodo" autocomplete="nickname">
       </form>
-      <p class="set-msg" id="set-nick-msg" role="status"></p>
     </section>
     <section class="set-block">
       <h2>Vista predeterminada</h2>
       <div id="set-view"></div>
-      <p class="set-msg">Es la vista con la que se abre la web en este dispositivo.</p>
+      <div id="set-focus"></div>
+      <p class="set-msg">Es la vista con la que se abre la web en este dispositivo y las tareas que se ven primero: las tuyas o todas.</p>
     </section>
     <section class="set-block">
       <h2>Colores de las tareas</h2>
       <div id="set-cmode"></div>
       <p class="set-msg" id="set-cmode-hint"></p>
       <div class="legend" id="set-legend"></div>
-      <p class="set-msg" id="set-color-msg" role="status"></p>
     </section>
     <section class="set-block">
       <h2>Cuenta</h2>
       <p class="set-email" id="set-email"></p>
       <div><button type="button" id="set-logout">Cerrar sesión</button></div>
     </section>
+  </div>
+  <div class="set-confirm" id="set-confirm" hidden>
+    <div class="set-confirm-box" role="alertdialog" aria-labelledby="set-confirm-t">
+      <h2 id="set-confirm-t">¿Guardar los cambios?</h2>
+      <p>Hiciste cambios en los ajustes que todavía no se guardaron.</p>
+      <div class="set-confirm-actions">
+        <button type="button" class="primary" id="sc-save">Guardar</button>
+        <button type="button" id="sc-discard">Descartar</button>
+        <button type="button" class="ghost" id="sc-stay">Seguir editando</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -167,12 +179,13 @@ const VIEWS = { list: "Lista", board: "Tablero", calendar: "Calendario" };
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const WEEKDAYS = ["Lu", "Mar", "Mie", "Jue", "Vie", "Sáb", "Do"];
 const PREFS_KEY = "mr_tareas_prefs";
+const FOCUS_OPTS = { mine: "Mis tareas", all: "Todas las tareas" }; // qué se ve al abrir la web
 
 const now = new Date();
 const state = {
   me: null, projects: [], tasks: [], users: [],
   focus: { type: "all" },           // { type: "user" | "project" | "all", id }
-  view: "list", defaultView: "list", sort: { key: "due", dir: 1 },
+  view: "list", defaultView: "list", defaultFocus: "mine", sort: { key: "due", dir: 1 },
   span: "month", week: null,         // escala del calendario y lunes (AAAA-MM-DD) de la semana que se ve
   day: null,                         // filtro por fecha límite (AAAA-MM-DD)
   month: { y: now.getFullYear(), m: now.getMonth() },
@@ -181,9 +194,10 @@ const state = {
 };
 try { Object.assign(state, JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")); } catch {}
 if (!VIEWS[state.defaultView]) state.defaultView = "list";
+if (!FOCUS_OPTS[state.defaultFocus]) state.defaultFocus = "mine";
 state.view = state.defaultView; // la web siempre abre con la vista predeterminada (se cambia en Ajustes)
 const savePrefs = () => {
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ defaultView: state.defaultView, sort: state.sort, span: state.span })); } catch {}
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ defaultView: state.defaultView, defaultFocus: state.defaultFocus, sort: state.sort, span: state.span })); } catch {}
 };
 
 let dragging = false, reloadTimer = null, channel = null, lastContentKey = "", menuHandler = null;
@@ -228,16 +242,29 @@ const tstate = (t) => (t.status === "done" ? "done" : t.due_date && t.due_date <
 // Cada persona elige con qué criterio se colorean las tareas (se guarda en su perfil: color_prefs.mode)
 const COLOR_MODES = { estado: "Estado", prioridad: "Prioridad", persona: "Persona", proyecto: "Proyecto", personalizado: "Personalizado" };
 const TAG_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8"]; // paleta de tokens.css (--color-tag-N)
-const TAG_NAMES = ["Violeta", "Azul", "Turquesa", "Amarillo", "Rosa", "Marrón", "Azul noche", "Negro"];
 const PRIO_COLORS = { 1: "7", 2: "2", 3: "3" }; // colores de prioridad si la persona no cambió ninguno
-const tagVar = (k) => `var(--color-tag-${k})`;
+// Un color guardado es un código HEX libre (#a1744a) o, en datos antiguos, un número de la paleta (1 a 8)
+const HEX_RE = /^#[0-9a-f]{6}$/i;
+const tagVar = (k) => (HEX_RE.test(k) ? k : `var(--color-tag-${k})`);
+function normHex(s) {
+  s = String(s).trim().replace(/^#/, "");
+  if (/^[0-9a-f]{3}$/i.test(s)) s = s.replace(/./g, "$&$&");
+  return /^[0-9a-f]{6}$/i.test(s) ? "#" + s.toLowerCase() : null;
+}
+function cssToHex(c) { // cualquier color CSS (también var(--…)) a #rrggbb
+  const n = el("span", { style: "color:" + c }); document.body.append(n);
+  const m = getComputedStyle(n).color.match(/[\d.]+/g) || [0, 0, 0]; n.remove();
+  return "#" + m.slice(0, 3).map((x) => Math.round(+x).toString(16).padStart(2, "0")).join("");
+}
 const NEUTRAL = "var(--color-tag-none)";
-const colorPrefs = () => meProfile().color_prefs || {};
+// Cambios de Ajustes sin guardar (null con Ajustes cerrado): lo que se ve en pantalla sale de aquí hasta pulsar «Guardar cambios»
+let draft = null;
+const colorPrefs = () => (draft && draft.prefs) || meProfile().color_prefs || {};
 const colorMode = () => (COLOR_MODES[colorPrefs().mode] ? colorPrefs().mode : "estado");
 // Color automático y estable para proyectos y personas que aún no tienen uno: su lugar en la lista ordenada por id
 const autoKey = (list, item) => TAG_KEYS[[...list].sort((a, b) => (a.id < b.id ? -1 : 1)).findIndex((x) => x.id === item.id) % TAG_KEYS.length];
-const userColorKey = (u) => u.color || autoKey(state.users, u);
-const projectColorKey = (p) => p.color || autoKey(state.projects, p);
+const userColorKey = (u) => (draft && draft.userColors[u.id] !== undefined ? draft.userColors[u.id] : u.color) || autoKey(state.users, u);
+const projectColorKey = (p) => (draft && draft.projectColors[p.id] !== undefined ? draft.projectColors[p.id] : p.color) || autoKey(state.projects, p);
 const stateColorKey = (s) => (colorPrefs().estado || {})[s] || null;
 const prioColorKey = (n) => (colorPrefs().prioridad || {})[n] || PRIO_COLORS[n] || "2";
 function colorOf(t, mode) {
@@ -259,13 +286,18 @@ function tint(node, t) {
   node.classList.toggle("tinted", cmode !== "estado"); // en Estado ya se ve el color en el estado de la tarea
   return node;
 }
-function swatchRow(value, onpick, noneLabel = "Sin color") {
-  return el("div", { class: "swatches", role: "radiogroup" },
-    el("button", { type: "button", class: "swatch none" + (!value ? " on" : ""), title: noneLabel, "aria-label": noneLabel, role: "radio", "aria-checked": String(!value), onclick: () => onpick(null) }),
-    ...TAG_KEYS.map((k, i) => el("button", {
-      type: "button", class: "swatch" + (value === k ? " on" : ""), title: TAG_NAMES[i], "aria-label": TAG_NAMES[i],
-      role: "radio", "aria-checked": String(value === k), style: `--sw:${tagVar(k)}`, onclick: () => onpick(k),
-    })));
+// Selector libre: rueda de color del navegador + código HEX + volver al color automático / original
+function colorPicker(css, onpick, noneLabel = "Sin color") {
+  const hex = cssToHex(css || NEUTRAL);
+  const wheel = el("input", { type: "color", class: "cwheel", value: hex, title: "Elegir color", "aria-label": "Elegir color" });
+  const code = el("input", { type: "text", class: "chex", value: hex.toUpperCase(), maxLength: 7, spellcheck: false, placeholder: "#RRGGBB", title: "Código HEX", "aria-label": "Código HEX" });
+  wheel.addEventListener("input", () => { code.value = wheel.value.toUpperCase(); code.classList.remove("bad"); });
+  wheel.addEventListener("change", () => onpick(wheel.value));
+  code.addEventListener("input", () => { const h = normHex(code.value); code.classList.toggle("bad", !h); if (h) wheel.value = h; });
+  code.addEventListener("change", () => { const h = normHex(code.value); if (h) onpick(h); else code.classList.add("bad"); });
+  return el("div", { class: "cpick" },
+    el("div", { class: "cpick-row" }, wheel, code),
+    el("button", { type: "button", class: "ghost cpick-none", textContent: noneLabel, onclick: () => onpick(null) }));
 }
 
 async function run(q) {
@@ -318,7 +350,7 @@ sb.auth.onAuthStateChange((_event, session) => {
 
 async function start(user) {
   state.me = user;
-  state.focus = { type: "user", id: user.id };
+  state.focus = state.defaultFocus === "all" ? { type: "all" } : { type: "user", id: user.id };
   $("#auth").hidden = true; $("#app").hidden = false;
   $("#me").textContent = user.email;
   $("#me").title = user.email + (sb.isMock ? " · modo demo" : "");
@@ -434,6 +466,9 @@ function sortTasks(list) {
   });
 }
 const visibleTasks = () => sortTasks(focusTasks().filter((t) => !state.day || t.due_date === state.day));
+// Al pasar el mes, las completadas de meses anteriores salen de la lista (siguen viéndose al elegir ese día en el calendario)
+const monthStart = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-01`; };
+const hiddenInList = (t) => !state.day && t.status === "done" && !!t.due_date && t.due_date < monthStart();
 function sortBy(key) {
   state.sort = state.sort.key === key ? { key, dir: -state.sort.dir } : { key, dir: 1 };
   savePrefs(); render();
@@ -739,10 +774,12 @@ function renderContent() {
 }
 
 const statePill = (s) => el("span", { class: "state-pill", data: { s }, textContent: STATE_LABEL[s] });
+// Marca de completada (Figma TAREA-LISTA); toma el color del texto de la casilla
+const CHECK_ICON = '<svg viewBox="0 0 9.72461 7.17414" width="9.72" height="7.17" fill="currentColor" aria-hidden="true"><path d="M3.40063 7.17414L0 3.77351L0.850158 2.92335L3.40063 5.47382L8.87445 0L9.72461 0.850158L3.40063 7.17414Z"/></svg>';
 function checkButton(t) {
   const done = t.status === "done";
   return el("button", {
-    class: "check", textContent: done ? "✓" : "", title: done ? "Marcar como pendiente" : "Marcar como completada",
+    class: "check", innerHTML: done ? CHECK_ICON : "", title: done ? "Marcar como pendiente" : "Marcar como completada",
     "aria-pressed": String(done),
     onclick: (e) => { e.stopPropagation(); updateTask(t.id, { status: done ? "todo" : "done" }); },
   });
@@ -757,11 +794,13 @@ const assigneeNames = (t) => t.assignees.map(userName).join(", ") || "—";
 function taskRow(t) {
   const s = tstate(t), done = t.status === "done";
   const desc = (t.description || "").split("\n")[0];
-  return tint(el("div", { class: "row" + (t.id === state.taskId ? " sel" : ""), onclick: () => selectTask(t.id) },
+  const owner = state.focus.type === "all";
+  return tint(el("div", { class: "row" + (owner ? " w-owner" : "") + (t.id === state.taskId ? " sel" : ""), onclick: () => selectTask(t.id) },
     el("div", { class: "cell-title" }, checkButton(t),
       el("div", { class: "tcol" },
         el("span", { class: "tt" + (done ? " done" : ""), textContent: t.title, title: t.title }),
-        ...(desc && !done ? [el("span", { class: "desc", textContent: desc })] : []))),
+        ...(desc ? [el("span", { class: "desc" + (done ? " done" : ""), textContent: desc })] : []))),
+    ...(owner ? [el("span", { class: "light c-owner", textContent: assigneeNames(t), title: assigneeNames(t) })] : []),
     el("span", { class: "light c-proj", textContent: state.focus.type === "project" ? assigneeNames(t) : projectName(t.project_id) }),
     statePill(s),
     el("span", { class: "light mono" + (s === "late" ? " late-date" : ""), textContent: fmtDate(t.due_date) }),
@@ -769,10 +808,11 @@ function taskRow(t) {
 }
 // Pendientes arriba, botón de añadir en medio y completadas debajo
 function renderList(tasks) {
+  tasks = tasks.filter((t) => !hiddenInList(t));
   const head = (label, key, cls = "") => el("span", { class: cls, data: { sort: key }, textContent: label + (state.sort.key === key ? (state.sort.dir === 1 ? " ↑" : " ↓") : ""), onclick: () => sortBy(key) });
   const list = el("div", { class: "list" },
-    el("div", { class: "row head" },
-      head("Tarea", "title", "h-title"), state.focus.type === "project" ? el("span", { class: "c-proj", textContent: "Asignada a" }) : head("Proyecto", "project", "c-proj"), head("Estado", "status"),
+    el("div", { class: "row head" + (state.focus.type === "all" ? " w-owner" : "") },
+      head("Tarea", "title", "h-title"), ...(state.focus.type === "all" ? [el("span", { class: "c-owner", textContent: "Asignada a" })] : []), state.focus.type === "project" ? el("span", { class: "c-proj", textContent: "Asignada a" }) : head("Proyecto", "project", "c-proj"), head("Estado", "status"),
       head("Fecha límite", "due"), head("Prioridad", "priority", "c-prio")));
   list.append(...tasks.filter((t) => t.status !== "done").map(taskRow));
   if (!tasks.length) list.append(el("p", { class: "empty", textContent: "No hay tareas para esta selección." }));
@@ -882,6 +922,7 @@ function boardCard(t) {
   const s = tstate(t);
   const card = el("div", { class: "bcard" + (t.id === state.taskId ? " sel" : ""), draggable: true, onclick: () => selectTask(t.id) },
     el("div", { class: "tt", textContent: t.title }),
+    ...((t.description || "").trim() ? [el("div", { class: "desc", textContent: t.description.trim() })] : []),
     el("div", { class: "meta" }, statePill(s), el("span", { textContent: projectName(t.project_id) }),
       el("span", { class: "mono", textContent: fmtDate(t.due_date) }), el("span", { class: "mono", textContent: prio(t.priority) })));
   card.addEventListener("dragstart", (e) => {
@@ -984,7 +1025,7 @@ function renderDetail() {
     field("Estado", segmented([["todo", STATE_LABEL.todo], ["doing", STATE_LABEL.doing], ["done", STATE_LABEL.done]], d.status, (v) => set({ status: v }))),
     field("Prioridad", segmented([1, 2, 3].map((n) => [n, prio(n)]), d.priority, (v) => set({ priority: v }))),
     field("Fecha límite", dateField(d.due_date, (v) => set({ due_date: v }))),
-    ...(colorMode() === "personalizado" && "color" in d ? [field("Color", swatchRow(d.color, (v) => set({ color: v })))] : []),
+    ...(colorMode() === "personalizado" && "color" in d ? [field("Color", colorPicker(d.color ? tagVar(d.color) : null, (v) => set({ color: v })))] : []),
     el("div", { class: "actions" },
       el("button", { type: "button", class: "primary", textContent: "Guardar cambios", onclick: saveDraft }),
       el("button", { type: "button", textContent: "Cancelar", onclick: discardDraft })),
@@ -1005,7 +1046,7 @@ function renderDetail() {
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if ($(".popover")) closeMenu();
-  else if (!$("#settings").hidden) closeSettings();
+  else if (!$("#settings").hidden) { if (!$("#set-confirm").hidden) $("#set-confirm").hidden = true; else requestCloseSettings(); }
   else if (state.taskId) closePanel();
   else setNav(false);
 });
@@ -1022,30 +1063,67 @@ document.addEventListener("click", (e) => {
 const meProfile = () => (state.me && userById(state.me.id)) || {};
 const paintAvatar = (node, url) => { node.style.backgroundImage = url ? `url("${url}")` : ""; };
 function setMsg(id, text, bad = false) { const n = $(id); n.textContent = text; n.classList.toggle("err", bad); }
-const saveError = (e) => /color/i.test(e.message || "") && /column|schema cache|function/i.test(e.message || "")
+const saveError = (e) => /color/i.test(e.message || "") && /check constraint|Color no valido/i.test(e.message || "")
+  ? "Falta ejecutar colores_libre.sql en Supabase (está explicado en el LEEME)."
+  : /color/i.test(e.message || "") && /column|schema cache|function/i.test(e.message || "")
   ? "Falta ejecutar colores.sql en Supabase (está explicado en el LEEME)."
   : /avatar_url|column|schema cache|policy|row-level/i.test(e.message || "")
     ? "Falta ejecutar perfil.sql en Supabase (está explicado en el LEEME)."
     : "No se pudo guardar: " + (e.message || e);
 
+const newDraft = () => ({ name: meProfile().name || "", view: state.defaultView, focus: state.defaultFocus, prefs: structuredClone(meProfile().color_prefs || {}), userColors: {}, projectColors: {}, photo: undefined, photoPreview: null });
+const sameColor = (a, b) => (a || null) === (b || null);
+// Qué cambió respecto de lo guardado
+function draftChanges() {
+  const p = meProfile(), d = draft, out = { users: [], projects: [] };
+  if (!d) return out;
+  const name = d.name.trim();
+  if (name !== (p.name || "")) out.name = name;
+  if (d.photo !== undefined) out.photo = d.photo;
+  if (JSON.stringify(d.prefs) !== JSON.stringify(p.color_prefs || {})) out.prefs = d.prefs;
+  if (d.view !== state.defaultView) out.view = d.view;
+  if (d.focus !== state.defaultFocus) out.focus = d.focus;
+  out.users = Object.entries(d.userColors).filter(([id, c]) => userById(id) && !sameColor(userById(id).color, c));
+  out.projects = Object.entries(d.projectColors).filter(([id, c]) => projectById(id) && !sameColor(projectById(id).color, c));
+  return out;
+}
+const settingsDirty = () => { const c = draftChanges(); return c.name !== undefined || c.photo !== undefined || !!c.prefs || !!c.view || !!c.focus || c.users.length > 0 || c.projects.length > 0; };
+let saving = false;
+const updateSaveState = () => { $("#set-save").disabled = saving || !settingsDirty(); };
+function editSettings(fn) { fn(draft); setMsg("#set-save-msg", ""); renderSettings(); }
+
 function openSettings() {
   setNav(false); closeMenu();
-  for (const id of ["#set-photo-msg", "#set-nick-msg"]) setMsg(id, "");
-  $("#set-nick").value = meProfile().name || "";
+  draft = newDraft();
+  setMsg("#set-save-msg", "");
+  $("#set-confirm").hidden = true;
+  $("#set-nick").value = draft.name;
   renderSettings();
   $("#settings").hidden = false;
   document.body.classList.add("settings-open");
   $("#set-back").focus();
 }
-function closeSettings() { $("#settings").hidden = true; document.body.classList.remove("settings-open"); }
+function closeSettings() {
+  $("#settings").hidden = true; $("#set-confirm").hidden = true; document.body.classList.remove("settings-open");
+  if (draft) { draft = null; if (state.me) render(); } // se descarta lo que no se guardó
+}
+// Volver: si hay cambios sin guardar, pregunta qué hacer con ellos
+function requestCloseSettings() {
+  if (!settingsDirty()) return closeSettings();
+  $("#set-confirm").hidden = false; $("#sc-save").focus();
+}
 function renderSettings() {
+  if (!draft) return;
   const p = meProfile();
-  paintAvatar($("#set-avatar"), p.avatar_url);
-  $("#set-photo-del").hidden = !p.avatar_url;
+  const photo = draft.photo === undefined ? p.avatar_url : draft.photo ? draft.photoPreview : null;
+  paintAvatar($("#set-avatar"), photo);
+  $("#set-photo-del").hidden = !photo;
   $("#set-email").textContent = state.me.email + (sb.isMock ? " · modo demo" : "");
-  $("#set-view").replaceChildren(segmented([["list", VIEWS.list], ["calendar", VIEWS.calendar], ["board", VIEWS.board]], state.defaultView,
-    (v) => { state.defaultView = v; savePrefs(); renderSettings(); }));
+  $("#set-view").replaceChildren(segmented([["list", VIEWS.list], ["calendar", VIEWS.calendar], ["board", VIEWS.board]], draft.view,
+    (v) => editSettings((d) => { d.view = v; })));
+  $("#set-focus").replaceChildren(segmented(Object.entries(FOCUS_OPTS), draft.focus, (v) => editSettings((d) => { d.focus = v; })));
   renderColorSettings();
+  updateSaveState();
 }
 
 // Colores: modo elegido y, debajo, qué significa cada color (editable)
@@ -1057,44 +1135,42 @@ const COLOR_HINTS = {
   personalizado: "Cada tarea lleva su propio color, que se elige en el panel de la tarea (campo «Color»). Sin elegir, se ve en gris.",
 };
 function legendRows() {
-  const m = colorMode(), cp = colorPrefs();
-  const savePrefsKey = (group, key, v) => {
-    const g = { ...(cp[group] || {}) };
+  const m = colorMode();
+  const savePrefsKey = (group, key, v) => editSettings((d) => {
+    const g = { ...(d.prefs[group] || {}) };
     if (v) g[key] = v; else delete g[key];
-    return saveColors(() => saveProfile({ color_prefs: { ...cp, [group]: g } }));
-  };
+    d.prefs = { ...d.prefs, [group]: g };
+  });
   if (m === "estado") return ["todo", "doing", "done", "late"].map((s) => ({
     label: STATE_LABEL[s], color: colorOf({ status: s === "late" ? "todo" : s, due_date: s === "late" ? "2000-01-01" : null }, "estado"),
-    key: stateColorKey(s), none: "Color original", save: (v) => savePrefsKey("estado", s, v) }));
+    none: "Color original", save: (v) => savePrefsKey("estado", s, v) }));
   if (m === "prioridad") return [1, 2, 3].map((n) => ({
-    label: PRIO[n] + (n === 1 ? "  (la más alta)" : ""), color: tagVar(prioColorKey(n)), key: prioColorKey(n), none: "Color original", save: (v) => savePrefsKey("prioridad", n, v) }));
+    label: PRIO[n] + (n === 1 ? "  (la más alta)" : ""), color: tagVar(prioColorKey(n)), none: "Color original", save: (v) => savePrefsKey("prioridad", n, v) }));
   if (m === "persona") return state.users.map((u) => ({
-    label: u.name + (u.id === state.me.id ? " (yo)" : ""), color: tagVar(userColorKey(u)), key: userColorKey(u), none: "Color automático",
-    save: (v) => saveColors(async () => { const { error } = await sb.rpc("set_profile_color", { target: u.id, c: v }); if (error) throw error; u.color = v; render(); load(); }) }));
+    label: u.name + (u.id === state.me.id ? " (yo)" : ""), color: tagVar(userColorKey(u)), none: "Color automático",
+    save: (v) => editSettings((d) => { d.userColors[u.id] = v; }) }));
   if (m === "proyecto") return [...state.projects].sort(byProjectRank).map((p) => ({
-    label: p.name, color: tagVar(projectColorKey(p)), key: projectColorKey(p), none: "Color automático",
-    save: (v) => saveColors(async () => { const { error } = await sb.from("projects").update({ color: v }).eq("id", p.id); if (error) throw error; p.color = v; render(); load(); }) }));
+    label: p.name, color: tagVar(projectColorKey(p)), none: "Color automático",
+    save: (v) => editSettings((d) => { d.projectColors[p.id] = v; }) }));
   return [];
-}
-async function saveColors(fn) {
-  setMsg("#set-color-msg", "");
-  try { await fn(); } catch (e) { setMsg("#set-color-msg", saveError(e), true); }
 }
 function renderColorSettings() {
   const m = colorMode();
-  const seg = segmented(Object.entries(COLOR_MODES), m, (v) => saveColors(() => saveProfile({ color_prefs: { ...colorPrefs(), mode: v } })));
+  const seg = segmented(Object.entries(COLOR_MODES), m, (v) => editSettings((d) => { d.prefs = { ...d.prefs, mode: v }; }));
   seg.classList.add("wrap");
   $("#set-cmode").replaceChildren(seg);
   $("#set-cmode-hint").textContent = COLOR_HINTS[m];
   $("#set-legend").replaceChildren(...legendRows().map((r) => {
     const sw = el("button", { type: "button", class: "swatch big", style: `--sw:${r.color}`, title: "Cambiar color", "aria-label": "Cambiar color de " + r.label, "aria-haspopup": "true" });
-    sw.onclick = () => openPopover(sw, el("div", { class: "pick" }, swatchRow(r.key, (v) => { closeMenu(); r.save(v); }, r.none)));
+    sw.onclick = () => openPopover(sw, el("div", { class: "pick" }, colorPicker(r.color, (v) => { closeMenu(); r.save(v); }, r.none)));
     return el("div", { class: "legend-row" }, sw, el("span", { textContent: r.label }));
   }));
 }
 async function saveProfile(patch) {
-  const { error } = await sb.from("profiles").update(patch).eq("id", state.me.id);
+  const { data, error } = await sb.from("profiles").update(patch).eq("id", state.me.id).select("id");
   if (error) throw error;
+  // Sin la política de perfil.sql, Supabase "guarda" 0 filas sin dar error
+  if (!data || !data.length) throw new Error("row-level security: no se modificó ninguna fila");
   Object.assign(meProfile(), patch); // se ve al instante; load() confirma con la base de datos
   render(); load();
 }
@@ -1107,37 +1183,65 @@ async function squareJpeg(file, size = 256) {
   return new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.85));
 }
 const blobToDataURL = (b) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
-async function changePhoto(file) {
-  setMsg("#set-photo-msg", "");
+// Sube la foto elegida y devuelve su dirección
+async function uploadPhoto(blob) {
+  if (sb.isMock) return blobToDataURL(blob);
+  const path = `${state.me.id}/avatar.jpg`, bucket = sb.storage.from("avatars");
+  const up = await bucket.upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+  if (up.error) throw up.error;
+  return bucket.getPublicUrl(path).data.publicUrl + "?v=" + Date.now(); // ?v evita que el navegador muestre la foto anterior
+}
+// Guarda todo lo pendiente; devuelve true si salió bien
+async function saveSettings() {
+  if (!draft || saving) return false;
+  const c = draftChanges();
+  if (c.name === "") { setMsg("#set-save-msg", "Escribe un apodo.", true); return false; }
+  saving = true; setMsg("#set-save-msg", "Guardando…"); updateSaveState();
   try {
-    const blob = await squareJpeg(file);
-    let url;
-    if (sb.isMock) url = await blobToDataURL(blob);
-    else {
-      const path = `${state.me.id}/avatar.jpg`, bucket = sb.storage.from("avatars");
-      const up = await bucket.upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-      if (up.error) throw up.error;
-      url = bucket.getPublicUrl(path).data.publicUrl + "?v=" + Date.now(); // ?v evita que el navegador muestre la foto anterior
+    const patch = {};
+    if (c.name) patch.name = c.name;
+    if (c.prefs) patch.color_prefs = c.prefs;
+    if (c.photo !== undefined) patch.avatar_url = c.photo ? await uploadPhoto(c.photo) : null;
+    if (Object.keys(patch).length) await saveProfile(patch);
+    for (const [id, col] of c.users) {
+      const { error } = await sb.rpc("set_profile_color", { target: id, c: col });
+      if (error) throw error;
+      userById(id).color = col;
     }
-    await saveProfile({ avatar_url: url });
-  } catch (e) { setMsg("#set-photo-msg", /imagen|decode|bitmap/i.test(e.message || "") ? "No se pudo leer esa imagen." : saveError(e), true); }
+    for (const [id, col] of c.projects) {
+      const { data, error } = await sb.from("projects").update({ color: col }).eq("id", id).select("id");
+      if (error) throw error;
+      if (!data || !data.length) throw new Error("row-level security: no se modificó ninguna fila");
+      projectById(id).color = col;
+    }
+    if (c.view || c.focus) { if (c.view) state.defaultView = c.view; if (c.focus) state.defaultFocus = c.focus; savePrefs(); }
+    draft = newDraft(); render(); load();
+    setMsg("#set-save-msg", "Cambios guardados.");
+    return true;
+  } catch (e) {
+    setMsg("#set-save-msg", saveError(e), true);
+    return false;
+  } finally { saving = false; updateSaveState(); }
 }
 
 $("#me-settings").onclick = openSettings;
-$("#set-back").onclick = closeSettings;
+$("#set-back").onclick = requestCloseSettings;
+$("#set-save").onclick = saveSettings;
+$("#sc-save").onclick = async () => { $("#set-confirm").hidden = true; if (await saveSettings()) closeSettings(); };
+$("#sc-discard").onclick = closeSettings;
+$("#sc-stay").onclick = () => { $("#set-confirm").hidden = true; };
 $("#set-photo-btn").onclick = () => $("#set-photo-file").click();
-$("#set-photo-file").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) changePhoto(f); };
-$("#set-photo-del").onclick = async () => {
-  setMsg("#set-photo-msg", "");
-  try { await saveProfile({ avatar_url: null }); } catch (e) { setMsg("#set-photo-msg", saveError(e), true); }
+$("#set-photo-file").onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try {
+    const blob = await squareJpeg(f), preview = await blobToDataURL(blob);
+    editSettings((d) => { d.photo = blob; d.photoPreview = preview; });
+  } catch { setMsg("#set-save-msg", "No se pudo leer esa imagen.", true); }
 };
-$("#set-nick-form").onsubmit = async (e) => {
-  e.preventDefault();
-  const name = $("#set-nick").value.trim();
-  if (!name) return setMsg("#set-nick-msg", "Escribe un apodo.", true);
-  try { await saveProfile({ name }); setMsg("#set-nick-msg", "Apodo guardado."); }
-  catch (err) { setMsg("#set-nick-msg", saveError(err), true); }
-};
+$("#set-photo-del").onclick = () => editSettings((d) => { d.photo = null; d.photoPreview = null; });
+$("#set-nick").addEventListener("input", (e) => { draft.name = e.target.value; setMsg("#set-save-msg", ""); updateSaveState(); });
+$("#set-nick-form").onsubmit = (e) => { e.preventDefault(); saveSettings(); };
 $("#set-logout").onclick = () => { closeSettings(); sb.auth.signOut(); };
 
 /* ---------- Arranque ---------- */

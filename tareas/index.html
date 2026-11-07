@@ -791,6 +791,17 @@ function addRow() {
 }
 // Dentro de un proyecto la columna de proyecto sería siempre la misma: se muestra quién tiene la tarea
 const assigneeNames = (t) => t.assignees.map(userName).join(", ") || "—";
+// Fotos de perfil de las personas asignadas (círculo gris si aún no tienen foto); el nombre sale al pasar el cursor
+function assigneeAvatars(t) {
+  const wrap = el("span", { class: "avatars", title: assigneeNames(t) });
+  if (!t.assignees.length) { wrap.textContent = "—"; return wrap; }
+  for (const id of t.assignees) {
+    const u = userById(id), a = el("span", { class: "avatar sm", "aria-label": userName(id) });
+    paintAvatar(a, u && u.avatar_url);
+    wrap.append(a);
+  }
+  return wrap;
+}
 function taskRow(t) {
   const s = tstate(t), done = t.status === "done";
   const desc = (t.description || "").split("\n")[0];
@@ -800,8 +811,8 @@ function taskRow(t) {
       el("div", { class: "tcol" },
         el("span", { class: "tt" + (done ? " done" : ""), textContent: t.title, title: t.title }),
         ...(desc ? [el("span", { class: "desc" + (done ? " done" : ""), textContent: desc })] : []))),
-    ...(owner ? [el("span", { class: "light c-owner", textContent: assigneeNames(t), title: assigneeNames(t) })] : []),
-    el("span", { class: "light c-proj", textContent: state.focus.type === "project" ? assigneeNames(t) : projectName(t.project_id) }),
+    ...(owner ? [el("span", { class: "light c-owner" }, assigneeAvatars(t))] : []),
+    el("span", { class: "light c-proj", ...(state.focus.type === "project" ? {} : { textContent: projectName(t.project_id) }) }, ...(state.focus.type === "project" ? [assigneeAvatars(t)] : [])),
     statePill(s),
     el("span", { class: "light mono" + (s === "late" ? " late-date" : ""), textContent: fmtDate(t.due_date) }),
     el("span", { class: "light mono c-prio", textContent: prio(t.priority) })), t);
